@@ -1,4 +1,5 @@
 
+using System;
 using System.ComponentModel.DataAnnotations;
 using Rozklad.API.Entities;
 
@@ -11,7 +12,7 @@ namespace Rozklad.V2.Entities
         
         // [BsonRepresentation(BsonType.ObjectId)]
         [Required]
-        public Subject Subject { get; set; }
+        public Guid SubjectId { get; set; }
         
         [Required]
         [EnumDataType(typeof(Weeks))]
