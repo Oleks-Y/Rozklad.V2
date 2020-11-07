@@ -2,8 +2,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -86,5 +88,37 @@ namespace Rozklad.V2.Controllers
             authDto.Token = tokenString;
             return Ok(authDto);
         }
+        // [Authorize]
+        // [HttpPatch("{studentId:guid}")]
+        // public async  Task<ActionResult> PatchStudent(Guid studentId,
+        //     [FromBody] JsonPatchDocument<StudentForUpdateDto> patchDocument)
+        // {
+        //     if (patchDocument == null)
+        //     {
+        //         return BadRequest();
+        //     }
+        //     var studentFromRepo = await _repository.GetStudentAsync(studentId);
+        //     if (studentFromRepo == null)
+        //     {
+        //         return NotFound();
+        //     }
+        //     
+        //     var studentToPatch = _mapper.Map<StudentForUpdateDto>(studentFromRepo); 
+        //     patchDocument.ApplyTo(studentToPatch, ModelState);
+        //     if (!TryValidateModel(studentToPatch))
+        //     {
+        //         return ValidationProblem();
+        //     }
+        //
+        //     _mapper.Map(studentToPatch, studentFromRepo);
+        //     
+        //     _repository.UpdateStudent(studentFromRepo);
+        //
+        //     await _repository.SaveAsync();
+        //
+        //     return NoContent();
+        //
+        //
+        // }
     }
 }

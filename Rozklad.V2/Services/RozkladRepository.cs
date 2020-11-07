@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Rozklad.V2.DataAccess;
 using Rozklad.V2.Entities;
 using Rozklad.V2.Models;
@@ -16,59 +17,64 @@ namespace Rozklad.V2.Services
         {
             _context = context;
         }
-        
-        public Subject GetSubject(string subjectId)
+
+        public async Task<Subject> GetSubjectAsync(Guid subjectId)
         {
-            throw new NotImplementedException();
+            return _context.Subjects.FirstOrDefault(s => s.Id == subjectId);
         }
 
-        public IEnumerable<Subject> GetAvailableSubjectsForStudent(string studentId)
+        public async Task<IEnumerable<Lesson>> GetLessonsForStudent(Guid studentId)
         {
-            throw new NotImplementedException();
-        }
+            var student = _context.Students.Include("Group").FirstOrDefault(s => s.Id == studentId);
+            var lessons = await _context.Lessons.Include("Subject")
+                .Where(l => l.Subject.GroupId == student.Group.Id)
+                .OrderBy(l=>l.Week)
+                .ThenBy(l=>l.DayOfWeek)
+                .ThenBy(l=>l.TimeStart)
+                .ToListAsync();
 
-        public IEnumerable<Lesson> GetLessons()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<Subject> GetSubjectsForStudent(string studentId, bool withRequired)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Group GetGroup(string groupId)
-        {
-            return _context.Groups.FirstOrDefault(g => g.Id.ToString() == groupId);
-        }
-
-        public void UpdateGroup(Group group)
-        {
-            
+            return lessons;
         }
 
         public Group GetGroupByName(string groupName)
         {
             return _context.Groups.FirstOrDefault(g => g.Group_Name.Replace(" ", "") == groupName);
         }
-        public void AddSubjectToStudent(string studentId, string subjectId)
+        
+        public Task<Student> GetStudentAsync(Guid studentId)
         {
-            throw new NotImplementedException();
+            return _context.Students.Include("Group").Include("Group.Subjects").Include("DisabledSubjects")
+                .FirstOrDefaultAsync(s => s.Id == studentId);
+        }
+        
+        public async Task<IEnumerable<Subject>> GetSubjectsForStudentAsync(Guid studentId)
+        {
+            // Get all subject for student group 
+            // Remove disabled subjects 
+            // Return list to user 
+            var student = await _context.Students.Include("Group").Include("Group.Subjects").Include("DisabledSubjects")
+                .FirstOrDefaultAsync(s => s.Id == studentId);
+            var disabledSubejcts = student.DisabledSubjects;
+
+            return student.Group.Subjects.Where(s => disabledSubejcts.All(ds => ds.SubjectId != s.Id));
         }
 
-        public void DeleteSubjectFromStudent(string studentId, string subjectId)
+        public async Task DisableSubjectAsync(Guid studentId, Guid subjectId)
         {
-            throw new NotImplementedException();
+            // add to disabledSubjects new line with subject id 
+            await _context.DisabledSubjects.AddAsync(new DisabledSubject()
+            {
+                Id = Guid.NewGuid(),
+                StudentId = studentId,
+                SubjectId = subjectId
+            });
         }
 
-        public Student GetStudent(string studentId)
+        public void EnableSubject(Guid studentId, Guid subjectId)
         {
-            throw new NotImplementedException();
-        }
-
-        public Student GetStudentByLastname(string lastname, string @group)
-        {
-            throw new NotImplementedException();
+            var toRemove =
+                _context.DisabledSubjects.Where(s => s.StudentId == studentId && s.SubjectId == subjectId);
+            _context.DisabledSubjects.RemoveRange(toRemove);
         }
 
         public void AddStudent(Student student)
@@ -76,49 +82,22 @@ namespace Rozklad.V2.Services
             throw new NotImplementedException();
         }
 
-        public void UpdateSubject(string subjectId, Subject subject)
+        public void UpdateSubject(Subject subject)
         {
-            throw new NotImplementedException();
         }
+        
 
-        public void UpdateStudent(string studentId, Student student)
+        public bool StudentExists(Guid studentId)
         {
-            throw new NotImplementedException();
+            return _context.Students.Any(s => s.Id == studentId);
         }
+        
+        
+        
 
-        public void DeleteStudent(Student student)
+        public async Task SaveAsync()
         {
-            throw new NotImplementedException();
-        }
-
-        public bool StudentExists(string studentId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SubjectExists(string subjectId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public LessonWithSubject GetLessonWithSubject(string lessonId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<LessonWithSubject> GetLessonsWithSubjectsForStudent(string studentId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<LessonWithSubject>> GetLessonsWithSubjectsForStudentAsync(string studentId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Save()
-        {
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }

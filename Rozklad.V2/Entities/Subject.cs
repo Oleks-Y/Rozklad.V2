@@ -22,7 +22,6 @@ namespace Rozklad.V2.Entities
    
         public string LabsZoom { get; set; }
         
-        public bool IsRequired { get; set; }
         
 
     }

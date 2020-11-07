@@ -8,36 +8,27 @@ namespace Rozklad.V2.Services
 {
     public interface IRozkladRepository
     {
-        Subject GetSubject(string subjectId);
+        Task<Subject> GetSubjectAsync(Guid  subjectId);
         
-        IEnumerable<Subject> GetAvailableSubjectsForStudent(string studentId);
-        IEnumerable<Lesson> GetLessons();
-        IEnumerable<Subject> GetSubjectsForStudent(string studentId, bool withRequired);
-
-        Group GetGroup(string groupId);
-        void UpdateGroup(Group group);
 
         Group GetGroupByName(string groupName);
-        void AddSubjectToStudent(string studentId, string subjectId);
-        void DeleteSubjectFromStudent(string studentId, string subjectId);
+
+        Task<Student> GetStudentAsync(Guid studentId);
+
+        public Task<IEnumerable<Lesson>> GetLessonsForStudent(Guid studentId);
         
-        Student GetStudent(string studentId);
-        Student GetStudentByLastname(string lastname, string group);
+        Task<IEnumerable<Subject>> GetSubjectsForStudentAsync(Guid studentId);
 
-        void AddStudent(Student student);
+        Task DisableSubjectAsync(Guid studentId, Guid subjectId);
+        void EnableSubject(Guid studentId, Guid subjectId);
         
-        void UpdateSubject(string subjectId,Subject subject);
-        void UpdateStudent(string studentId,Student student);
+        void UpdateSubject(Subject subject);
 
         
-        void DeleteStudent(Student student);
+        bool StudentExists(Guid studentId);
+        
 
-        bool StudentExists(string studentId);
-        public bool SubjectExists(string subjectId);
-        public LessonWithSubject GetLessonWithSubject(string lessonId);
+        Task SaveAsync();
 
-        public IEnumerable<LessonWithSubject> GetLessonsWithSubjectsForStudent(string studentId);
-        public Task<IEnumerable<LessonWithSubject>> GetLessonsWithSubjectsForStudentAsync(string studentId);
-        void Save();
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Rozklad.V2.Entities;
 
 namespace Rozklad.V2.Services
@@ -7,7 +8,7 @@ namespace Rozklad.V2.Services
     {
         Student Authentificate(string username, string password);
 
-        Student GetById(int id);
+        Student GetById(Guid id);
 
         Student Create(Student student, string passrord);
     }

@@ -53,9 +53,9 @@ namespace Rozklad.V2.Services
             return user;
         }
 
-        public Student GetById(int id)
+        public Student GetById(Guid id)
         {
-            throw new System.NotImplementedException();
+            return _context.Students.Find(id);
         }
 
        

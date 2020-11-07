@@ -12,7 +12,9 @@ namespace Rozklad.V2.Entities
         // [BsonRepresentation(BsonType.ObjectId)]
         [Required]
         [ForeignKey("Subjects")]
-        public Guid Subject { get; set; }
+        public Guid SubjectId { get; set; }
+        
+        public Subject Subject { get; set; }
         
         [Required]
         public int Week { get; set; }

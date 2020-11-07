@@ -39,7 +39,8 @@ namespace Rozklad.V2
             services.Configure<AppSettings>(appSettingsSection);
             
             services.AddEntityFrameworkNpgsql();
-            services .AddDbContext<ApplicationDbContext>();
+            services .AddDbContext<ApplicationDbContext>(options =>
+                options.UseNpgsql(Configuration.GetConnectionString("Connection")));
             services.AddControllersWithViews();
             var appSettings = appSettingsSection.Get<AppSettings>();
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
@@ -55,7 +56,7 @@ namespace Rozklad.V2
                         OnTokenValidated = context =>
                         {
                             var userService = context.HttpContext.RequestServices.GetRequiredService<IStudentService>();
-                            var userId = int.Parse(context.Principal.Identity.Name ?? string.Empty);
+                            var userId = Guid.Parse(context.Principal.Identity.Name ?? string.Empty);
                             var user = userService.GetById(userId);
                             if (user == null)
                             {
@@ -75,7 +76,7 @@ namespace Rozklad.V2
                         ValidateAudience = false
                     };
                 });
-
+            services.AddControllersWithViews().AddNewtonsoftJson();
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IRozkladRepository, RozkladRepository>();
             // In production, the React files will be served from this directory

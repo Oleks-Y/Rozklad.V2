@@ -12,15 +12,17 @@ namespace Rozklad.V2.Entities
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
-
-
+        
         public Guid GroupId { get; set; }
-
+        
+        public Group Group { get; set; }
+        
         public string Username { get; set; }
 
         public byte[] PasswordHash { get; set; }
         public byte[] PasswordSalt { get; set; }
 
-        [NotMapped] public IEnumerable<string> Subjects { get; set; }
+        public IEnumerable<DisabledSubject> DisabledSubjects { get; set; }
+        // [NotMapped] public IEnumerable<string> Subjects { get; set; } 
     }
 }
