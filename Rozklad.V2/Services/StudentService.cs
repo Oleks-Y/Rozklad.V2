@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Rozklad.V2.DataAccess;
 using Rozklad.V2.Entities;
 using Rozklad.V2.Exceptions;
@@ -31,7 +32,12 @@ namespace Rozklad.V2.Services
 
             // authentication successful
         }
-        
+
+        public Student GetStudentByUsernameAsync(string username)
+        {
+            return _context.Students.FirstOrDefault(s => s.Username == username);
+        }
+
         public Student Create(Student user, string password)
         {
             // validation
@@ -51,6 +57,16 @@ namespace Rozklad.V2.Services
             _context.SaveChanges();
 
             return user;
+        }
+
+        public Student CreateFromTelegram(Student student, long telegramId)
+        {
+            student.Telegram_Id = telegramId;
+            student.Id = Guid.NewGuid();
+            _context.Students.Add(student);
+            _context.SaveChanges();
+
+            return student;
         }
 
         public Student GetById(Guid id)

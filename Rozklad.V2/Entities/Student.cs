@@ -23,6 +23,8 @@ namespace Rozklad.V2.Entities
         public byte[] PasswordSalt { get; set; }
 
         public IEnumerable<DisabledSubject> DisabledSubjects { get; set; }
+        
+        public long? Telegram_Id { get; set; }
         // [NotMapped] public IEnumerable<string> Subjects { get; set; } 
     }
 }

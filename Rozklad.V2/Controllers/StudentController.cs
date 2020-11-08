@@ -37,6 +37,62 @@ namespace Rozklad.V2.Controllers
         }
 
         [AllowAnonymous]
+        [HttpPost("telegram")]
+        public IActionResult AuthWithTelegram([FromBody] TelegramAuthModel model)
+        {
+            // Validate telegram request 
+            // Check if student exists 
+            // if exists auth 
+            // if not exists register and auth
+            var student =_studentService.GetStudentByUsernameAsync(model.TelegramUser.username);
+            if (student==null)
+            {
+                // register new 
+                var group = _repository.GetGroupByName(model.Group);
+                if ( group== null)
+                {
+                    return BadRequest(new {message = "Group not exist!"});
+                }
+
+                student = new Student
+                {
+                    Username = model.TelegramUser.username,
+                    FirstName = model.TelegramUser.first_name,
+                    LastName = model.TelegramUser.last_name,
+                    GroupId = @group.Id
+                };
+                try
+                {
+                    _studentService.CreateFromTelegram(student, model.TelegramUser.id);
+                }
+                catch (AppException ex)
+                {
+                    return BadRequest(new {message = ex.Message});
+                }
+            }
+            // Todo check something about security
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+            var tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.Name, student.Id.ToString()),
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+            var authDto = _mapper.Map<AuthentificateDto>(student);
+            authDto.Token = tokenString;
+            return Ok(authDto);
+            
+        }
+        
+        [AllowAnonymous]
         [HttpPost("register")]
         public IActionResult Register([FromBody] RegisterModel model)
         {

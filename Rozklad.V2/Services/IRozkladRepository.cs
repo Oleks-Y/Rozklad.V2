@@ -9,8 +9,8 @@ namespace Rozklad.V2.Services
     public interface IRozkladRepository
     {
         Task<Subject> GetSubjectAsync(Guid  subjectId);
-        
 
+        
         Group GetGroupByName(string groupName);
 
         Task<Student> GetStudentAsync(Guid studentId);

@@ -1,5 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30621.155
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rozklad.V2", "Rozklad.V2\Rozklad.V2.csproj", "{9ECA5746-C238-4D6F-85F4-10DE2C385461}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rozkald.V2.Tests", "Rozkald.V2.Tests\Rozkald.V2.Tests.csproj", "{20C5A1AC-C410-4CE4-890E-304EDF72423C}"
@@ -18,5 +21,11 @@ Global
 		{20C5A1AC-C410-4CE4-890E-304EDF72423C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20C5A1AC-C410-4CE4-890E-304EDF72423C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20C5A1AC-C410-4CE4-890E-304EDF72423C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {16BC407B-5043-4851-9330-3FB533971C4B}
 	EndGlobalSection
 EndGlobal
