@@ -22,11 +22,12 @@ function Site() {
                             <Route path="/site/home">
                                 <Dashboard/>
                                 <DedlinesPreview/>
+                                {/*todo here will be description*/}
                             </Route>
                             <PrivateRoute path="/site/timetable" component={Timetable} accessWithGroup={true}/>
                             <PrivateRoute path="/site/subjects" accessWithGroup={false} component={SubjectsLayout}/>
                             <Route path="/site">
-                                <Redirect to="/site/home"/>
+                                <Redirect to="/site/timetable"/>
                             </Route>
                             <Route>
                                 <NotFound/>

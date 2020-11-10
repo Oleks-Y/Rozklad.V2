@@ -9,8 +9,8 @@ namespace Rozklad.V2.Services
     public interface IRozkladRepository
     {
         Task<Subject> GetSubjectAsync(Guid  subjectId);
-
         
+        Task<IEnumerable<Subject>> GetDisabledSubjectsAsync(Guid  studentId);
         Group GetGroupByName(string groupName);
 
         Task<Student> GetStudentAsync(Guid studentId);
@@ -18,7 +18,7 @@ namespace Rozklad.V2.Services
         public Task<IEnumerable<Lesson>> GetLessonsForStudent(Guid studentId);
         
         Task<IEnumerable<Subject>> GetSubjectsForStudentAsync(Guid studentId);
-
+        Task<IEnumerable<Lesson>> GetLessonsForGroupAsync(Guid groupId);
         Task DisableSubjectAsync(Guid studentId, Guid subjectId);
         void EnableSubject(Guid studentId, Guid subjectId);
         

@@ -25,8 +25,8 @@ function Lesson(props: LessonProps) {
           <a
               href={
                   props.lesson.type === "Лек"
-                      ? props.lesson.subject.lessonsZoom[0]?.url
-                      : props.lesson.subject.labsZoom[0]?.url
+                      ? props.lesson.subject.lessonsZoom
+                      : props.lesson.subject.labsZoom
               }
           >
             {props.lesson.subject.name}
@@ -36,7 +36,7 @@ function Lesson(props: LessonProps) {
                     <div className="col mr-2">
                         <div className="text-uppercase text-primary font-weight-bold text-xs mb-0">
               <span className="text-capitalize" style={color}>
-                {props.lesson.subject.teachers}
+                {props.lesson.subject.teachers} | {props.lesson.type}
               </span>
                         </div>
                         <div className="text-dark font-weight-bold h5 mb-0">
@@ -48,8 +48,8 @@ function Lesson(props: LessonProps) {
                                     navigator.clipboard
                                         .writeText(
                                             props.lesson.type === "Лек"
-                                                ? props.lesson.subject.lessonsZoom[0]?.url
-                                                : props.lesson.subject.labsZoom[0]?.url
+                                                ? props.lesson.subject.lessonsZoom
+                                                : props.lesson.subject.labsZoom
                                         )
                                         .then(() => alert("Copied!"))
                                 }

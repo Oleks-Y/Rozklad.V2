@@ -168,7 +168,6 @@ namespace Rozklad.V2.Controllers
         //
         //     _mapper.Map(studentToPatch, studentFromRepo);
         //     
-        //     _repository.UpdateStudent(studentFromRepo);
         //
         //     await _repository.SaveAsync();
         //
@@ -176,5 +175,6 @@ namespace Rozklad.V2.Controllers
         //
         //
         // }
+        // Todo add method for adding disabled subjects  
     }
 }

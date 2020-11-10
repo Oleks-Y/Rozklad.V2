@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rozklad.V2.Entities;
+using Rozklad.V2.Models;
 using Rozklad.V2.Services;
 
 namespace Rozklad.V2.Controllers
@@ -33,7 +35,20 @@ namespace Rozklad.V2.Controllers
 
             return Ok(groupNames);
         }
-        
+        [AllowAnonymous]
+        [HttpGet("{groupName}/timetable")]
+        public async Task<ActionResult<IEnumerable<SubjectDto>>> GetTimeTableGroupAsync(string groupName)
+        {
+            var group = _rozkladRepository.GetGroupByName(groupName);
+            if (group == null)
+            {
+                return NotFound();
+            }
+
+            var lessons = await _rozkladRepository.GetLessonsForGroupAsync(group.Id);
+            
+            return Ok(lessons);
+        }
 
     }
 }

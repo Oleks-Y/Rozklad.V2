@@ -75,7 +75,28 @@ namespace Rozklad.V2.Controllers
             return subjectsDtos;
 
         }
+        [HttpGet("disabled")]
+        public async Task<ActionResult<IEnumerable<SubjectDto>>> GetDisabledSubjecs(Guid studentId)
+        {
+            if (string.IsNullOrEmpty(studentId.ToString()))
+            {
+                return NotFound();
+            }
+            var student = await _repository.GetStudentAsync(studentId);
+            if (student == null)
+            {
+                return BadRequest();
+            }
+            if (student?.Group == null)
+            {
+                return BadRequest();
+            }
 
+            var subjects = await _repository.GetDisabledSubjectsAsync(studentId);
+            var subjectsDtos = subjects.Select(s => _mapper.Map<SubjectDto>(s)).ToList();
+
+            return subjectsDtos;
+        }
         [HttpPatch("{subjectId:guid}/disable")]
         public async Task<IActionResult> DisableSubjects(Guid studentId, Guid subjectId)
         {

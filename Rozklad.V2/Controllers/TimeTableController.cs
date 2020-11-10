@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Rozklad.V2.Helpers;
@@ -28,7 +29,7 @@ namespace Rozklad.V2.Controllers
             _appSettings = appSettings.Value;
             _repository = repository;
         }
-        
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SubjectDto>>> GetTimetableAsync(Guid studentId)
         {
@@ -36,16 +37,16 @@ namespace Rozklad.V2.Controllers
             {
                 return NotFound();
             }
-        
+
             // get lessons 
             // order lessons
-            var student =  await _repository.GetStudentAsync(studentId);
+            var student = await _repository.GetStudentAsync(studentId);
             if (student == null)
             {
                 return NotFound();
             }
 
-            var lessons=  await _repository.GetLessonsForStudent(studentId);
+            var lessons = await _repository.GetLessonsForStudent(studentId);
 
             return Ok(lessons);
         }

@@ -1,18 +1,19 @@
 import React, {FormEvent} from "react";
 import TimetableService from "../services/timrtableService";
-import StudentAuthService from "../services/studentAuthService";
+import StudentAuthService, {UsageTypes} from "../services/studentAuthService";
 import {LessonWithSubject} from "../models/LessonWithSubject";
 import Day from "./Day";
-import {Button, Form, FormControl, InputGroup, Modal} from "react-bootstrap";
-import {SubjectDto} from "../models/Subject";
+import {Button, Modal} from "react-bootstrap";
 import {subjectsService} from "../services/subjectsService";
+import TelegramLoginForSite from "../Layouts/Login/TelegramLoginForSite";
 
 interface TimetableProps {
     loading: boolean;
     timetable: LessonWithSubject[] | null;
     showModal: boolean,
     lessonToChange: LessonWithSubject | null,
-    formValue: string | null
+    formValue: string | null,
+    showAlert: boolean
 }
 
 class Timetable extends React.Component {
@@ -27,23 +28,30 @@ class Timetable extends React.Component {
         timetable: null,
         showModal: false,
         lessonToChange: null,
-        formValue: null
+        formValue: null,
+        showAlert: false
     };
 
     async loadData() {
-        const studentId = new StudentAuthService().getStudentID();
         let timetable: LessonWithSubject[] | null = null;
-        if (studentId === null) {
-            console.error("User not logined");
-        }
+        const studentService = new StudentAuthService()
+        const usageType = studentService.getUsageType()
         try {
-            timetable = await TimetableService.getTimeTable(studentId);
+            if (usageType === UsageTypes.Authentificated) {
+                const student_id = studentService.getStudent()?.id
+                const token = studentService.getStudent()?.token
+                timetable = await TimetableService.getTimeTable(student_id!, token!)
+            } else if (usageType === UsageTypes.ByGroup) {
+                const group_Id = studentService.getGroup()!
+                timetable = await TimetableService.getGroupTimeTable(group_Id)
+            }
         } catch (e) {
             console.error(e);
         }
         return timetable;
     }
 
+    // todo add icon with group and name
     componentDidMount() {
         this.loadData()
             .then((data) =>
@@ -60,17 +68,35 @@ class Timetable extends React.Component {
             showModal: false
         })
     }
+    handleCloseAlert = () => {
+        this.setState({
+            showAlert: false
+        })
+    }
+    handleOpenAlert = () => {
+        this.setState({
+            showAlert: true
+        })
+    }
     handleOpen = () => {
+
         this.setState({
             showModal: true
         })
     }
 
-    handleChange=(event: any)=> {
+    handleChange = (event: any) => {
         this.setState({formValue: event.target.value});
     }
 
     showModal = (lesson: LessonWithSubject) => {
+        const studentService = new StudentAuthService()
+        const usageType = studentService.getUsageType()
+        if (usageType !== UsageTypes.Authentificated) {
+            // todo add ability to autentificate rigth here!
+            this.handleOpenAlert()
+            return
+        }
         this.setState({
             lessonToChange: lesson
         });
@@ -80,13 +106,22 @@ class Timetable extends React.Component {
         e.preventDefault()
         const link = this.state.formValue
         const lesson = this.state.lessonToChange
-        subjectsService.updateSubjectLinks(lesson?.type!, link!, lesson?.subject.id!)
+        const studentService = new StudentAuthService()
+        const token = studentService.getToken()
+        subjectsService.updateSubjectLinks(lesson?.type!, link!, lesson?.subject.id!, token!)
             .then(() => {
-                this.setState({formValue: "", lessonToChange: null});
+                let timetable = this.state.timetable!
+                if(lesson?.type=="Лек") {
+                    timetable!.find(l => l.subject.id === lesson?.subject.id!)!.subject.lessonsZoom = link!
+                }
+                else if(lesson?.type=="Лаб" ||lesson?.type=="Прак" ) {
+                    timetable!.find(l => l.subject.id === lesson?.subject.id!)!.subject.labsZoom = link!
+                }
+                this.setState({formValue: "", lessonToChange: null, timetable :timetable });
             })
-            .catch(e=>alert(e));
+            .catch(e => alert(e));
         this.handleClose()
-        
+        this.forceUpdate()
     }
 
     render() {
@@ -110,12 +145,12 @@ class Timetable extends React.Component {
                     <h1>Перший тиждень</h1>
                     <Modal show={this.state.showModal} onHide={this.handleClose}>
                         <Modal.Header closeButton>
-                            <Modal.Title>Paste Link to Subject</Modal.Title>
+                            <Modal.Title>Вставте оновлене посилання</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             <form onSubmit={this.onSubmit}>
                                 <label>
-                                    Link
+                                    Посилання
                                     <input type="text" className="input-group" value={this.state.formValue!}
                                            onChange={this.handleChange}/>
                                 </label>
@@ -127,6 +162,20 @@ class Timetable extends React.Component {
                         <Modal.Footer>
                             <Button variant="secondary" onClick={this.handleClose}>
                                 Close
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
+                    <Modal show={this.state.showAlert} onHide={this.handleCloseAlert}>
+                        <Modal.Header closeButton>
+                            <Modal.Title>Помилка</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <p>Для доступу до цієї функції потрібна авторизація !</p>
+                            <TelegramLoginForSite closeFunc={this.handleCloseAlert}/>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={this.handleCloseAlert}>
+                                Закрити
                             </Button>
                         </Modal.Footer>
                     </Modal>

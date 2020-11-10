@@ -1,45 +1,30 @@
-// @ts-ignore
-import React, {useState} from "react";
-import Subject from "./Subject";
+﻿import React, {useEffect, useState} from "react";
 import {SubjectDto} from "../models/Subject";
 import StudentAuthService from "../services/studentAuthService";
 import {subjectsService} from "../services/subjectsService";
-import {Modal, Button} from "react-bootstrap"
-import {Redirect} from "react-router-dom";
+import Subject from "./Subject";
+import {Button, Modal} from "react-bootstrap";
 
-interface SubjectsLayoutProps {
-    loading: boolean;
-    subjects: SubjectDto[] | null,
-    subjectsChanged: boolean,
-    showModal: boolean,
-    subjectsToChoice: SubjectDto[] | null,
-    redirect : boolean
-}
 
-class SubjectLayout extends React.Component {
-    constructor(props: any) {
-        super(props);
+const [, updateState] = React.useState();
+const forceUpdate = React.useCallback(() => updateState({}), []);
 
-    }
-
-    state: SubjectsLayoutProps = {
-        loading: true,
-        subjects: null,
-        subjectsChanged: false,
-        showModal: false,
-        subjectsToChoice: null,
-        redirect : false
-    }
-    subjectIds: string[] = []
-
-    async loadData() {
-        const studentId = new StudentAuthService().getStudentID();
+function SubjectsLayout() {
+    const [loading, setLoading] = useState<boolean>(true)
+    const [subjects, setSubjects] = useState<SubjectDto[] | null>(null)
+    const [disabledSubjects, setDisabledSubjects] = useState<SubjectDto[] | null>(null)
+    const [showModal, setShowModal] = useState<boolean>(false)
+    const studentService = new StudentAuthService()
+    const forceUpdate = useForceUpdate();
+    const loadData = async () => {
+        const token = studentService.getToken()!
+        const studentId = studentService.getStudent()?.id!
         let subjects: SubjectDto[] | null = null;
         if (studentId === null) {
             console.error("User not logined");
         }
         try {
-            subjects = await subjectsService.getSubjects(studentId);
+            subjects = await subjectsService.getSubjects(studentId, token);
         } catch (e) {
             console.error(e)
         }
@@ -47,149 +32,96 @@ class SubjectLayout extends React.Component {
         return subjects
     }
 
-    async loadChoiceData() {
-        const studentId = new StudentAuthService().getStudentID();
-        let subjects: SubjectDto[] | null = null;
-        if (studentId === null) {
-            console.error("User not logined");
-        }
+    const loadChoiseData = async () => {
+        const token = studentService.getToken()!
+        const studentId = studentService.getStudent()?.id!
+        let disabledSubjects: SubjectDto[] | null;
         try {
-            subjects = await subjectsService.getSubjectsToChoice(studentId);
+            disabledSubjects = await subjectsService.getDisabledSubjects(studentId, token)
         } catch (e) {
             console.error(e)
         }
 
-        return subjects
+        return disabledSubjects!;
     }
-
-    componentDidMount() {
-        this.loadData()
-            .then(data => {
-                    data?.map(s => this.subjectIds.push(s.id))
-                    this.setState({
-                        loading: false,
-                        subjects: data
-                    });
-
-                }
-            ).catch(e => console.error(e))
-        this.loadChoiceData()
-            .then(data => {
-                    this.setState({
-                        loading: false,
-                        subjectsToChoice: data
-                    });
-                }
-            ).catch(e => console.error(e))
+    const handleClose = () => {
+        setShowModal(false)
     }
-
-    addSubject(subject : SubjectDto) {
-        let subjects = this.state.subjects
-        if(subjects==null){
-            subjects = [subject]
-        }
-        else {
-            subjects?.push(subject)
-        }
-        this.setState({
-           subjects : subjects,
-            subjectsToChoice : this.state.subjectsToChoice?.filter(s=>s.id!= subject.id),
-            subjectsChanged : true
-        });
+    const handleOpen = () => {
+        setShowModal(true)
     }
+    // enable subject
+    const deleteSubjectFormList = (subjectId: string) => {
+        const token = studentService.getToken()!;
+        const studentId = studentService.getStudent()?.id!
+        subjectsService.enableSubject(subjectId, studentId, token)
+            .then(r => {
+                forceUpdate()
+            })
+            .catch(e => console.error(e))
 
-    handleClose = () => {
-        this.setState({
-            showModal: false
+    }
+    // disable subject
+    const addSubjectToList = (subjectId: string) => {
+        const token = studentService.getToken()!;
+        const studentId = studentService.getStudent()?.id!
+        subjectsService.disableSubject(subjectId, studentId, token)
+            .then(r => {
+                forceUpdate()
+            })
+            .catch(e => console.error(e))
+    }
+    useEffect(() => {
+        loadData().then(data => {
+            setSubjects(data)
+            setLoading(false)
         })
-    }
-    handleOpen = () => {
-        this.setState({
-            showModal: true
+            .catch(e => console.error(e))
+
+        loadChoiseData().then(data => {
+            setDisabledSubjects(data)
         })
-    }
-    setRedirect = () => {
-        this.setState({
-            redirect: true,
-        });
-    };
-    renderRedirect = () => {
-        if (this.state.redirect) {
-            return <Redirect to={`/site`} />;
-        }
-    };
-    updateSubjects=()=> {
-        const studentId = new StudentAuthService().getStudentID();
-        const sublects = this.state.subjects
-        try {
-            subjectsService.updateSubjects(studentId, sublects?.map(s => s.id) as string[])
-                .then(() => this.setRedirect())
-                .catch(() => alert("Something went wrong! Try refresh page"))
-        }catch (e) {
-            console.error(e)
-        }
+            .catch(e => console.error(e))
+    })
+
+    if (loading) {
+        return (
+            <div className="spinner-border" role="status">
+                <span className="sr-only">Loading...</span>
+            </div>
+        );
     }
 
-    deleteSubjectFormList = (id: string) => {
-        //  manipulate only main subjects array a
-        //  when subject deletes, it must be added to subjectsToChoice
-        console.log(this.subjectIds)
-        const subject = this.state.subjects?.find(s=>s.id==id)
-        this.subjectIds = this.subjectIds.filter(subject_id => subject_id != id)
-        console.log("Yeah bitch, this fucking function works and we delete", id)
-        this.setState({
-            subjects: this.state.subjects?.filter(s => s.id != id),
-            subjectsChanged: true,
-        })
-        this.state.subjectsToChoice?.push(subject!)
-    }
-
-    render() {
-        if (this.state.loading) {
-            return (
-                <div className="spinner-border" role="status">
-                    <span className="sr-only">Loading...</span>
-                </div>
-            );
-        }
-        if (!this.state.loading) {
-            console.log(this.state.subjects)
-            return (<div className="container">
-                <div className="row">
-                    {
-                        this.state.subjects?.map(s => <Subject subject={s} deleteFunc={this.deleteSubjectFormList}/>)
-                    }
-                </div>
-                {this.renderRedirect()}
-                <div className="row">
-                    <div className="col offset-8"><a className="btn btn-success btn-icon-split" role="button"><span
-                        className="text-white-50 icon"><i className="fas fa-plus"/></span><span
-                        className="text-white text" onClick={this.handleOpen}>Add subject</span></a>
-                    </div>
-                    <Modal show={this.state.showModal} onHide={this.handleClose}>
-                        <Modal.Header closeButton>
-                            <Modal.Title>Select subjects to add</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>{this.state.subjectsToChoice?.map(s =>
-                            <button type="button" className="btn btn-primary m-1" onClick={()=>this.addSubject(s)}>{s.name}</button>
-                        )}
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button variant="secondary" onClick={this.handleClose}>
-                                Close
-                            </Button>
-                        </Modal.Footer>
-                    </Modal>
-                    {this.state.subjectsChanged &&
-                    <div className="col offset-8"><a className="btn btn-primary btn-icon-split" role="button"><span
-                        className="text-white-50 icon"><i className="fas fa-save"/></span><span
-                        className="text-white text" onClick={this.updateSubjects}>Save</span></a>
-                    </div>}
-                </div>
-            </div>)
-        }
-    }
-
+    return (<div className="container">
+        <div className="row">
+            {
+                subjects?.map(s => <Subject subject={s} deleteFunc={deleteSubjectFormList}/>)
+            }
+        </div>
+        {/*{this.renderRedirect()}*/}
+        <div className="row">
+            <div className="col offset-8"><a className="btn btn-success btn-icon-split" role="button"><span
+                className="text-white-50 icon"><i className="fas fa-plus"/></span><span
+                className="text-white text" onClick={handleOpen}>Add subject</span></a>
+            </div>
+            <Modal show={showModal} onHide={handleClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Select subjects to add</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{disabledSubjects?.map(s =>
+                    <button type="button" className="btn btn-primary m-1" onClick={() => {
+                        addSubjectToList(s.id)
+                    }}>{s.name}</button>
+                )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClose}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </div>
+    </div>)
 }
 
-export default SubjectLayout;
+export default SubjectsLayout

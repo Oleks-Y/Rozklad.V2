@@ -26,8 +26,8 @@ function Subject(props: SubjectProps) {
                 </div>
                 <div className="card-body d-none d-sm-block">
                     <p className="m-0 text-dark">Teachers :{props.subject.teachers} &nbsp;</p>
-                    <p className="m-0 text-primary">Lections : {props.subject.lessonsZoom.map(l=>l.url).join("\n")}&nbsp;</p>
-                    <p className="m-0 text-primary">Prattics :{props.subject.labsZoom.map(l=>l.url).join("\n")}&nbsp;</p>
+                    <p className="m-0 text-primary">Lections : {props.subject.lessonsZoom}&nbsp;</p>
+                    <p className="m-0 text-primary">Prattics :{props.subject.labsZoom}&nbsp;</p>
                     
                 </div>
             </div>

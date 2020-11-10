@@ -23,6 +23,15 @@ namespace Rozklad.V2.Services
             return _context.Subjects.FirstOrDefault(s => s.Id == subjectId);
         }
 
+        public async Task<IEnumerable<Subject>> GetDisabledSubjectsAsync(Guid studentId)
+        {
+            // get disabled subjects by studentId
+            var disabledSubjects = await _context.DisabledSubjects.Where(s => s.StudentId == studentId).ToListAsync();
+            var subjects = new List<Subject>();
+            subjects.AddRange(_context.Subjects.Where(s=>disabledSubjects.Select(subject =>subject.SubjectId).Contains(s.Id)));
+            return subjects;
+        }
+
         public async Task<IEnumerable<Lesson>> GetLessonsForStudent(Guid studentId)
         {
             var student = _context.Students.Include("Group").FirstOrDefault(s => s.Id == studentId);
@@ -57,6 +66,19 @@ namespace Rozklad.V2.Services
             var disabledSubejcts = student.DisabledSubjects;
 
             return student.Group.Subjects.Where(s => disabledSubejcts.All(ds => ds.SubjectId != s.Id));
+        }
+
+        public async Task<IEnumerable<Lesson>> GetLessonsForGroupAsync(Guid groupId)
+        {
+            var group = await _context.Groups.Include("Subjects").FirstOrDefaultAsync(g => g.Id == groupId);
+            var lessons = await _context.Lessons.Include("Subject")
+                .Where(l => l.Subject.GroupId == group.Id)
+                .OrderBy(l=>l.Week)
+                .ThenBy(l=>l.DayOfWeek)
+                .ThenBy(l=>l.TimeStart)
+                .ToListAsync();
+
+            return lessons;
         }
 
         public async Task DisableSubjectAsync(Guid studentId, Guid subjectId)
