@@ -85,7 +85,12 @@ namespace Rozklad.V2.Services
         public void UpdateSubject(Subject subject)
         {
         }
-        
+
+        public  async  Task<IEnumerable<Group>> GetAllGroupsAsync()
+        {
+            return  await _context.Groups.ToListAsync();
+        }
+
 
         public bool StudentExists(Guid studentId)
         {

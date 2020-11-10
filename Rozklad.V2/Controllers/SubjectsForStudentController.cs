@@ -49,7 +49,7 @@ namespace Rozklad.V2.Controllers
         //     }
         //     var group = student.Group;
         //     var subjectsDtos = group.Subjects.Select(s => _mapper.Map<SubjectDto>(s)).ToList();
-        //     // Todo remove disabled subjects 
+        //     
         //     return subjectsDtos;
         // }
         [HttpGet]

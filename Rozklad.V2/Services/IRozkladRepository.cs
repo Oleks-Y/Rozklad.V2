@@ -23,11 +23,9 @@ namespace Rozklad.V2.Services
         void EnableSubject(Guid studentId, Guid subjectId);
         
         void UpdateSubject(Subject subject);
-
+        Task<IEnumerable<Group>> GetAllGroupsAsync();
         
         bool StudentExists(Guid studentId);
-        
-
         Task SaveAsync();
 
     }

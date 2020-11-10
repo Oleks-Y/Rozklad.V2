@@ -1,13 +1,24 @@
 import React from 'react';
-import { Route, Redirect } from "react-router-dom";
-
+import {Route, Redirect} from "react-router-dom";
+import StudentAuthService, {UsageTypes} from "./services/studentAuthService"
 // @ts-ignore
-const GuardedRoute = ({ component: Component, auth, ...rest }) => (
-    <Route {...rest} render={(props) => (
-        auth === true
-            ? <Component {...props} />
-            : <Redirect to='/login' />
-    )} />
-)
-
-export default GuardedRoute;
+export const PrivateRoute = ({component: Component,accessWithGroup, ...rest}) => (
+        <Route {...rest} render={props => {
+            const authenticationService = new StudentAuthService();
+            const usageType = authenticationService.getUsageType();
+            if(usageType == UsageTypes.Authentificated){
+                return <Component {...props} />
+            }else if(usageType == UsageTypes.ByGroup){
+                if(accessWithGroup){
+                    return <Component {...props} />
+                }
+                // todo add message 
+                return <Redirect to={{ pathname: '/login?message="Для цієї дії необхідно авторизуватись"', state: { from: props.location } }} />
+            }
+            else{
+                // todo add message
+                return <Redirect to={{ pathname: '/login', state: { from: props.location } }} />
+            }
+        }}/>
+    )
+;

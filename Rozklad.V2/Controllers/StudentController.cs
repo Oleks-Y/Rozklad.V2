@@ -45,14 +45,15 @@ namespace Rozklad.V2.Controllers
             // if exists auth 
             // if not exists register and auth
             var student =_studentService.GetStudentByUsernameAsync(model.TelegramUser.username);
+            var group = _repository.GetGroupByName(model.Group);
+            if ( group== null)
+            {
+                return BadRequest(new {message = "Group not exist!"});
+            }
             if (student==null)
             {
                 // register new 
-                var group = _repository.GetGroupByName(model.Group);
-                if ( group== null)
-                {
-                    return BadRequest(new {message = "Group not exist!"});
-                }
+                
 
                 student = new Student
                 {
@@ -88,6 +89,7 @@ namespace Rozklad.V2.Controllers
             var tokenString = tokenHandler.WriteToken(token);
             var authDto = _mapper.Map<AuthentificateDto>(student);
             authDto.Token = tokenString;
+            authDto.Group = model.Group;
             return Ok(authDto);
             
         }
@@ -96,8 +98,6 @@ namespace Rozklad.V2.Controllers
         [HttpPost("register")]
         public IActionResult Register([FromBody] RegisterModel model)
         {
-            // Todo create repository 
-            // Todo check for group 
             var student = _mapper.Map<Student>(model);
             var group = _repository.GetGroupByName(model.Group);
             if ( group== null)

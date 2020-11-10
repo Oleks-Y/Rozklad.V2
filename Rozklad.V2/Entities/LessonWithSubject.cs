@@ -25,7 +25,7 @@ namespace Rozklad.V2.Entities
         [Required]
         [RegularExpression("^([0-1][0-9]|2[0-3]):([0-5][0-9])$")]
         public string TimeStart { get; set; }
-        // Todo ["Лек", "Лаб"] 
+        
         public string Type { get; set; }
     }
     

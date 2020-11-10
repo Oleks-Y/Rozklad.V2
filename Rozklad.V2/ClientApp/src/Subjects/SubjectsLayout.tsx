@@ -131,8 +131,8 @@ class SubjectLayout extends React.Component {
     }
 
     deleteSubjectFormList = (id: string) => {
-        // Todo manipulate only main subjects array a
-        // Todo when subject deletes, it must be added to subjectsToChoice
+        //  manipulate only main subjects array a
+        //  when subject deletes, it must be added to subjectsToChoice
         console.log(this.subjectIds)
         const subject = this.state.subjects?.find(s=>s.id==id)
         this.subjectIds = this.subjectIds.filter(subject_id => subject_id != id)

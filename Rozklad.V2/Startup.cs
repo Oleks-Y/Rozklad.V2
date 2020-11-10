@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Rozklad.V2.DataAccess;
 using Rozklad.V2.Helpers;
 using Rozklad.V2.Services;
@@ -82,6 +83,16 @@ namespace Rozklad.V2
             services.AddScoped<TelegramValidationService>(s=>new TelegramValidationService(appSettings.BotToken));
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
+            services.AddSwaggerGen(options =>
+            {
+                options.DescribeAllEnumsAsStrings();
+                options.SwaggerDoc( "v1", new OpenApiInfo
+                {
+                    Title =  "Rozklad",
+                    Version  = "v1",
+                    Description = "Simple API"
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -116,7 +127,12 @@ namespace Rozklad.V2
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
             });
-            
+            app.UseSwagger()
+                .UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1" );
+                    
+                });
             app.UseSpa(spa =>
             {
                 spa.Options.SourcePath = "ClientApp";

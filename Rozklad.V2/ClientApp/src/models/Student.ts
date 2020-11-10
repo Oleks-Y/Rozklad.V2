@@ -1,10 +1,10 @@
 export interface StudentDto{
     id : string ;
-    fullName: string;
-    group: string;
+    firstName: string;
+    lastname : string;
+    username : string;
+    group : string;
+    token: string
 }
-export interface StudentFormData {
-    fullName: string;
-    group: string;
-}
+
 

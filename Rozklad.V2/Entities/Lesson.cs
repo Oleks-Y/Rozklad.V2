@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Rozklad.V2.Entities
 {
     public class Lesson 
-    {    //Todo add validation
+    {    
         [Key]
         public Guid Id { get; set; }
         
@@ -24,7 +24,7 @@ namespace Rozklad.V2.Entities
         
         [Required]
         public string TimeStart { get; set; }
-        // Todo ["Лек", "Лаб"] 
+         
         public string Type { get; set; }
         
         // public Subject Subject { get; set; }

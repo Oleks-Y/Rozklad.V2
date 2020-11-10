@@ -7,6 +7,7 @@ import {Switch, Route, Redirect, BrowserRouter} from "react-router-dom";
 import Timetable from "../../Timetable/Timetable";
 import NotFound from "../../NotFound";
 import SubjectsLayout from "../../Subjects/SubjectsLayout"
+import {PrivateRoute} from "../../GuardedRoute";
 
 function Site() {
     return (
@@ -17,25 +18,20 @@ function Site() {
             <div id="wrapper">
                 <div className="d-flex flex-column" id="content-wrapper">
                     <div id="content">
-                            <Switch>
-                                <Route path="/site/home">
-                                    <Dashboard/>
-                                    <DedlinesPreview/>
-                                </Route>
-                                <Route path="/site/timetable">
-                                    <Timetable/>
-                                </Route>
-                                <Route path="/site/subjects">
-                                    <SubjectsLayout/>
-                                </Route>
-                                <Route path="/site">
-                                    <Redirect to="/site/home"/>
-                                </Route>
-
-                                <Route>
-                                    <NotFound/>
-                                </Route>
-                            </Switch>
+                        <Switch>
+                            <Route path="/site/home">
+                                <Dashboard/>
+                                <DedlinesPreview/>
+                            </Route>
+                            <PrivateRoute path="/site/timetable" component={Timetable} accessWithGroup={true}/>
+                            <PrivateRoute path="/site/subjects" accessWithGroup={false} component={SubjectsLayout}/>
+                            <Route path="/site">
+                                <Redirect to="/site/home"/>
+                            </Route>
+                            <Route>
+                                <NotFound/>
+                            </Route>
+                        </Switch>
                         <Footer/>
                     </div>
                 </div>
