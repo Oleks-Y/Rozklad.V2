@@ -28,7 +28,6 @@ function Subject(props: SubjectProps) {
                     <p className="m-0 text-dark">Teachers :{props.subject.teachers} &nbsp;</p>
                     <p className="m-0 text-primary">Lections : {props.subject.lessonsZoom}&nbsp;</p>
                     <p className="m-0 text-primary">Prattics :{props.subject.labsZoom}&nbsp;</p>
-                    
                 </div>
             </div>
         </div>

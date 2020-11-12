@@ -4,7 +4,7 @@ import {UserFromTelegram} from "../../models/UserFromTelegram";
 import StudentAuthService from "../../services/studentAuthService";
 import {AuthRequestData} from "../../models/AuthRequestData";
 
-function TelegramLoginForSite(props : {closeFunc : Function}){
+const TelegramLoginForSite : React.FC<{closeFunc : ()=>void}>=(props : {closeFunc : ()=>void})=>{
     const onAuth=(user: UserFromTelegram)=>{
         const service = new StudentAuthService()
         const group = service.getGroup()

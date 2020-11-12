@@ -1,4 +1,4 @@
-﻿import React, {useEffect, useState} from "react";
+﻿import React, {useEffect, useLayoutEffect, useState} from "react";
 import {SubjectDto} from "../models/Subject";
 import StudentAuthService from "../services/studentAuthService";
 import {subjectsService} from "../services/subjectsService";
@@ -6,16 +6,13 @@ import Subject from "./Subject";
 import {Button, Modal} from "react-bootstrap";
 
 
-const [, updateState] = React.useState();
-const forceUpdate = React.useCallback(() => updateState({}), []);
-
-function SubjectsLayout() {
+const SubjectsLayout=()=> {
     const [loading, setLoading] = useState<boolean>(true)
     const [subjects, setSubjects] = useState<SubjectDto[] | null>(null)
     const [disabledSubjects, setDisabledSubjects] = useState<SubjectDto[] | null>(null)
     const [showModal, setShowModal] = useState<boolean>(false)
     const studentService = new StudentAuthService()
-    const forceUpdate = useForceUpdate();
+    const [rerender, setRerender] = useState<boolean>(false)
     const loadData = async () => {
         const token = studentService.getToken()!
         const studentId = studentService.getStudent()?.id!
@@ -28,8 +25,8 @@ function SubjectsLayout() {
         } catch (e) {
             console.error(e)
         }
-
-        return subjects
+        setSubjects(subjects)
+        setLoading(false)
     }
 
     const loadChoiseData = async () => {
@@ -42,7 +39,7 @@ function SubjectsLayout() {
             console.error(e)
         }
 
-        return disabledSubjects!;
+        setDisabledSubjects(disabledSubjects!)
     }
     const handleClose = () => {
         setShowModal(false)
@@ -55,8 +52,10 @@ function SubjectsLayout() {
         const token = studentService.getToken()!;
         const studentId = studentService.getStudent()?.id!
         subjectsService.enableSubject(subjectId, studentId, token)
-            .then(r => {
-                forceUpdate()
+            .then(_ => {
+                // delete from disabled 
+                // add to subjects
+                setRerender(!rerender)
             })
             .catch(e => console.error(e))
 
@@ -66,24 +65,16 @@ function SubjectsLayout() {
         const token = studentService.getToken()!;
         const studentId = studentService.getStudent()?.id!
         subjectsService.disableSubject(subjectId, studentId, token)
-            .then(r => {
-                forceUpdate()
+            .then(_ => {
+                setRerender(!rerender)
             })
             .catch(e => console.error(e))
     }
-    useEffect(() => {
-        loadData().then(data => {
-            setSubjects(data)
-            setLoading(false)
-        })
-            .catch(e => console.error(e))
-
-        loadChoiseData().then(data => {
-            setDisabledSubjects(data)
-        })
-            .catch(e => console.error(e))
-    })
-
+    useLayoutEffect(() => {
+        loadData()
+        loadChoiseData()
+    }, [rerender])
+    
     if (loading) {
         return (
             <div className="spinner-border" role="status">
@@ -95,7 +86,7 @@ function SubjectsLayout() {
     return (<div className="container">
         <div className="row">
             {
-                subjects?.map(s => <Subject subject={s} deleteFunc={deleteSubjectFormList}/>)
+                subjects?.map(s => <Subject subject={s} deleteFunc={addSubjectToList} key={s.id}/>)
             }
         </div>
         {/*{this.renderRedirect()}*/}
@@ -110,7 +101,7 @@ function SubjectsLayout() {
                 </Modal.Header>
                 <Modal.Body>{disabledSubjects?.map(s =>
                     <button type="button" className="btn btn-primary m-1" onClick={() => {
-                        addSubjectToList(s.id)
+                        deleteSubjectFormList(s.id)
                     }}>{s.name}</button>
                 )}
                 </Modal.Body>

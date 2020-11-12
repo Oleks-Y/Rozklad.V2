@@ -22,7 +22,8 @@ const renderSuggestion = (suggestion: string) => (<div>{suggestion}</div>)
 
 export interface GroupSelectProps {
     groups: string[]
-    onSubmit: Function
+    onSubmit: Function,
+    groupValue: string | null
 }
 
 class GroupSelect extends React.Component<GroupSelectProps> {
@@ -59,7 +60,7 @@ class GroupSelect extends React.Component<GroupSelectProps> {
 
     render() {
         const {value, suggestions} = this.state as any;
-
+        let groupValue = this.props.groupValue
         // Autosuggest will pass through all these props to the input.
         const inputProps = {
             placeholder: 'Оберіть групу',
@@ -82,13 +83,13 @@ class GroupSelect extends React.Component<GroupSelectProps> {
                         inputProps={inputProps}
                     />
                 </div>
-                <div className="col">
+                <div className="col-xs-1 ">
                     <a className="btn btn-secondary" role="button" style={{display: "block"}}>
-                <span className="text-white text" style={{display: "block"}} onClick={() => {
-                    this.onSubmit!(this.state.value)
-                }}>
-                    Далі
-                </span>
+                        <span className="text-white text" style={{display: "block"}} onClick={() => {
+                            this.onSubmit!(this.state.value)
+                        }}>
+                            Далі
+                        </span>
                     </a>
                 </div>
             </div>)
@@ -96,5 +97,6 @@ class GroupSelect extends React.Component<GroupSelectProps> {
 
     }
 }
+
 // if group not exist, disable button 
 export default GroupSelect

@@ -6,6 +6,8 @@ import {UserFromTelegram} from "../../models/UserFromTelegram";
 import StudentAuthService from "../../services/studentAuthService";
 import {AuthRequestData} from "../../models/AuthRequestData";
 import {Redirect} from "react-router-dom";
+import {Button, Modal} from "react-bootstrap";
+import TelegramLoginForSite from "./TelegramLoginForSite";
 
 
 function TelegramLogin() {
@@ -16,10 +18,14 @@ function TelegramLogin() {
     const [groupName, setGroupName] = useState<string>();
     const [loginType, setLoginType] = useState<"login" | "groupWatch">("login")
     const [redirect, setRedirect] = useState<boolean>(false)
+    const [showModal, setShowModal] = useState<boolean>(false)
+    const [showBack, setShowBack] = useState<boolean>(false)
+
     const dataOnAuth = (user: UserFromTelegram) => {
         console.log(user)
         setUser(user)
         setHiddenGroup(false)
+        setHiddenTelega(true)
     }
     useEffect(() => {
         if (groups.length == 0) {
@@ -38,14 +44,14 @@ function TelegramLogin() {
             return <Redirect to="/site"/>;
         }
     };
+    const service = new StudentAuthService()
     const onGroupChoosen = (groupString: string) => {
-        if(!groups.includes(groupString.trim().toLowerCase())){
+        if (!groups.includes(groupString.trim().toLowerCase())) {
             // toast error 
-            alert("Даної групи немає в базі даних!")
+            Show()
             return
         }
         setGroupName(groupString);
-        const service = new StudentAuthService()
         service.logout()
         if (user == null) {
             // login with group
@@ -57,20 +63,39 @@ function TelegramLogin() {
                 telegramUser: user!,
                 group: groupString
             }
-            const response = service.login(dataToAith).then(r =>{
+            const response = service.login(dataToAith).then(r => {
                 setRedirect(true)
             }).catch(
-                e=>console.error(e)
+                e => console.error(e)
             )
         }
     }
+    const Show = () => {
+        setShowModal(true)
+    }
+    const onHide = () => {
+        setShowModal(false)
+    }
+    const group = service.getGroup()
     return (
         <div>
+            <Modal show={showModal} onHide={onHide}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Помилка</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>Данної групи немає в базі даних!</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={onHide}>
+                        Закрити
+                    </Button>
+                </Modal.Footer>
+            </Modal>
             {hiddenTelega ? <div/> :
                 <div><TelegramLoginButton botName={"Rozklad_KpiBot"}
                                           buttonSize="large"
                                           cornerRadius={2}
-                    // dataAuthUrl={`${window.location.protocol}//${window.location.host}/site`}
                                           dataOnauth={dataOnAuth}
                                           requestAccess={"write"}
                                           usePic={true}/>
@@ -78,6 +103,7 @@ function TelegramLogin() {
                         setHiddenTelega(true);
                         setHiddenGroup(false);
                         setLoginType("groupWatch")
+                        setShowBack(true)
                     }}>
                 <span className="text-white text" style={{display: "block"}}>
                     Переглянути без логіну
@@ -87,9 +113,14 @@ function TelegramLogin() {
             }
             <hr/>
             {renderRedirect()}
-            {/* todo pass ref here*/}
-            {groups.length === 0 || hiddenGroup ? <div/> : <GroupSelect groups={groups} onSubmit={onGroupChoosen}/>}
-            {/*<GroupSelect groups={groups} onSubmit={onGroupChoosen} />*/}
+
+            {groups.length === 0 || hiddenGroup ? <div/> :
+                <GroupSelect groups={groups} onSubmit={onGroupChoosen} groupValue={group}/>}
+            {showBack ? <button className="btn btn-circle btn-primary my-1" onClick={() => {
+                setShowBack(false)
+                setHiddenTelega(false)
+                setLoginType("login")
+            }}><i className="fa fa-arrow-up"/></button> : <div/>}
         </div>
     )
 }

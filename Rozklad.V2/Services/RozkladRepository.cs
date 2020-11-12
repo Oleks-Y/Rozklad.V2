@@ -28,34 +28,54 @@ namespace Rozklad.V2.Services
             // get disabled subjects by studentId
             var disabledSubjects = await _context.DisabledSubjects.Where(s => s.StudentId == studentId).ToListAsync();
             var subjects = new List<Subject>();
-            subjects.AddRange(_context.Subjects.Where(s=>disabledSubjects.Select(subject =>subject.SubjectId).Contains(s.Id)));
+            subjects.AddRange(_context.Subjects.Where(s =>
+                disabledSubjects.Select(subject => subject.SubjectId).Contains(s.Id)));
             return subjects;
         }
 
+        // public async Task<IEnumerable<Lesson>> GetLessonsForStudent(Guid studentId)
+        // {
+        //     var student = _context.Students.Include("Group").FirstOrDefault(s => s.Id == studentId);
+        //     var lessons = await _context.Lessons.Include("Subject")
+        //         .Where(l => l.Subject.GroupId == student.Group.Id)
+        //         .OrderBy(l=>l.Week)
+        //         .ThenBy(l=>l.DayOfWeek)
+        //         .ThenBy(l=>l.TimeStart)
+        //         .ToListAsync();
+        //     // todo exclude disabled lessons 
+        //     return lessons;
+        // }
         public async Task<IEnumerable<Lesson>> GetLessonsForStudent(Guid studentId)
         {
             var student = _context.Students.Include("Group").FirstOrDefault(s => s.Id == studentId);
             var lessons = await _context.Lessons.Include("Subject")
-                .Where(l => l.Subject.GroupId == student.Group.Id)
-                .OrderBy(l=>l.Week)
-                .ThenBy(l=>l.DayOfWeek)
-                .ThenBy(l=>l.TimeStart)
-                .ToListAsync();
+                .Where(l => l.Subject.GroupId == student.Group.Id).ToListAsync();
+            var disabledSubjects = _context.DisabledSubjects.Where(s => s.StudentId == student.Id);
+            var lessonsCopy = new Lesson[lessons.Count];
+            lessons.CopyTo(lessonsCopy);
+            foreach (var lesson in lessonsCopy.Where(lesson =>
+                disabledSubjects.Select(s => s.SubjectId).Contains(lesson.SubjectId)))
+            {
+                lessons.Remove(lesson);
+            }
 
-            return lessons;
+            return lessons.OrderBy(l => l.Week)
+                .ThenBy(l => l.DayOfWeek)
+                .ThenBy(l => l.TimeStart)
+                .ToList();
         }
 
         public Group GetGroupByName(string groupName)
         {
             return _context.Groups.FirstOrDefault(g => g.Group_Name.Replace(" ", "") == groupName);
         }
-        
+
         public Task<Student> GetStudentAsync(Guid studentId)
         {
             return _context.Students.Include("Group").Include("Group.Subjects").Include("DisabledSubjects")
                 .FirstOrDefaultAsync(s => s.Id == studentId);
         }
-        
+
         public async Task<IEnumerable<Subject>> GetSubjectsForStudentAsync(Guid studentId)
         {
             // Get all subject for student group 
@@ -73,9 +93,9 @@ namespace Rozklad.V2.Services
             var group = await _context.Groups.Include("Subjects").FirstOrDefaultAsync(g => g.Id == groupId);
             var lessons = await _context.Lessons.Include("Subject")
                 .Where(l => l.Subject.GroupId == group.Id)
-                .OrderBy(l=>l.Week)
-                .ThenBy(l=>l.DayOfWeek)
-                .ThenBy(l=>l.TimeStart)
+                .OrderBy(l => l.Week)
+                .ThenBy(l => l.DayOfWeek)
+                .ThenBy(l => l.TimeStart)
                 .ToListAsync();
 
             return lessons;
@@ -108,9 +128,9 @@ namespace Rozklad.V2.Services
         {
         }
 
-        public  async  Task<IEnumerable<Group>> GetAllGroupsAsync()
+        public async Task<IEnumerable<Group>> GetAllGroupsAsync()
         {
-            return  await _context.Groups.ToListAsync();
+            return await _context.Groups.ToListAsync();
         }
 
 
@@ -118,9 +138,7 @@ namespace Rozklad.V2.Services
         {
             return _context.Students.Any(s => s.Id == studentId);
         }
-        
-        
-        
+
 
         public async Task SaveAsync()
         {
