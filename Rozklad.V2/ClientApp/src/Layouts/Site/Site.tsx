@@ -19,11 +19,6 @@ function Site() {
                 <div className="d-flex flex-column" id="content-wrapper">
                     <div id="content">
                         <Switch>
-                            <Route path="/site/home">
-                                <Dashboard/>
-                                <DedlinesPreview/>
-                                {/*todo here will be description*/}
-                            </Route>
                             <PrivateRoute path="/site/timetable" component={Timetable} accessWithGroup={true}/>
                             <PrivateRoute path="/site/subjects" accessWithGroup={false} component={SubjectsLayout}/>
                             <Route path="/site">
