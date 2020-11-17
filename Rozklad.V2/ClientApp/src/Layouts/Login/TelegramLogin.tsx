@@ -93,7 +93,7 @@ function TelegramLogin() {
                 </Modal.Footer>
             </Modal>
             {hiddenTelega ? <div/> :
-                <div><TelegramLoginButton botName={"Rozklad_KpiBot"}
+                <div><TelegramLoginButton botName={"RozkladDevelopment_bot"}
                                           buttonSize="large"
                                           cornerRadius={2}
                                           dataOnauth={dataOnAuth}

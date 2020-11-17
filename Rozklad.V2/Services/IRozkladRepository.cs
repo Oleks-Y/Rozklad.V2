@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Rozklad.V2.Entities;
+using Rozklad.V2.Helpers;
 
 namespace Rozklad.V2.Services
 {
@@ -15,6 +16,8 @@ namespace Rozklad.V2.Services
 
         Task<Student> GetStudentAsync(Guid studentId);
 
+        Task UpdateNotification(NotificationsSettings notificationsInfo);
+        
         public Task<IEnumerable<Lesson>> GetLessonsForStudent(Guid studentId);
         
         Task<IEnumerable<Subject>> GetSubjectsForStudentAsync(Guid studentId);
@@ -26,6 +29,11 @@ namespace Rozklad.V2.Services
         Task<IEnumerable<Group>> GetAllGroupsAsync();
         
         bool StudentExists(Guid studentId);
+
+        Task<IEnumerable<NotificationsSettings>> GetAllNotificationsSettings();
+
+        Task<IEnumerable<FireTime>> GetAllNotificationsFireTimes();
+        
         Task SaveAsync();
 
     }

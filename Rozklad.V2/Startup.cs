@@ -13,8 +13,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Quartz;
+using Quartz.Impl;
+using Quartz.Spi;
 using Rozklad.V2.DataAccess;
 using Rozklad.V2.Helpers;
+using Rozklad.V2.Scheduler;
+using Rozklad.V2.Scheduler.Jobs;
 using Rozklad.V2.Services;
 
 namespace Rozklad.V2
@@ -80,7 +85,7 @@ namespace Rozklad.V2
             services.AddControllersWithViews().AddNewtonsoftJson();
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IRozkladRepository, RozkladRepository>();
-            services.AddScoped<TelegramValidationService>(s=>new TelegramValidationService(appSettings.BotToken));
+            services.AddSingleton<TelegramValidationService>(s=>new TelegramValidationService(appSettings.BotToken));
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
             services.AddSwaggerGen(options =>
@@ -93,6 +98,15 @@ namespace Rozklad.V2
                     Description = "Simple API"
                 });
             });
+            
+            // QUARTZ 
+            // Add Quartz services 
+            services.AddSingleton<IJobFactory, SingletonJobFactory>();
+            services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
+            services.AddScoped<ISchedulerService, SchedulerService>();
+            // Add jobs 
+            services.AddSingleton<NotificationJob>();
+            services.AddHostedService<QuartzHostedService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

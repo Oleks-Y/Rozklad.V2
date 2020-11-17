@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Rozklad.V2.DataAccess;
 using Rozklad.V2.Entities;
+using Rozklad.V2.Helpers;
 using Rozklad.V2.Models;
 
 namespace Rozklad.V2.Services
@@ -45,6 +46,23 @@ namespace Rozklad.V2.Services
         //     // todo exclude disabled lessons 
         //     return lessons;
         // }
+
+        public async Task UpdateNotification(NotificationsSettings notificationsInfo)
+        {
+            // if notification not exist in table create it and set data 
+            var notificationsInfoFromDb =
+                await _context.NotificationsSettings.FirstOrDefaultAsync(
+                    n => n.StudentId == notificationsInfo.StudentId);
+            if (notificationsInfoFromDb == null)
+            {
+                await _context.NotificationsSettings.AddAsync(notificationsInfo);
+                return;
+            }
+
+            notificationsInfoFromDb.IsNotificationsOn = notificationsInfo.IsNotificationsOn;
+            notificationsInfoFromDb.TimeBeforeLesson = notificationsInfo.TimeBeforeLesson;
+        }
+
         public async Task<IEnumerable<Lesson>> GetLessonsForStudent(Guid studentId)
         {
             var student = _context.Students.Include("Group").FirstOrDefault(s => s.Id == studentId);
@@ -137,6 +155,43 @@ namespace Rozklad.V2.Services
         public bool StudentExists(Guid studentId)
         {
             return _context.Students.Any(s => s.Id == studentId);
+        }
+
+        public async Task<IEnumerable<NotificationsSettings>> GetAllNotificationsSettings()
+        {
+            return await _context.NotificationsSettings.ToListAsync();
+        }
+
+        public async Task<IEnumerable<FireTime>> GetAllNotificationsFireTimes()
+        {
+            // get all notifications 
+            // foreach student in notifications get all lessons 
+            // for timetable calculate notificationsTime 
+            // select all unique notification times  
+            var notificationsSettings = await _context.NotificationsSettings.ToListAsync();
+            var fireTimes = new List<FireTime>();
+            foreach (var notificationsSetting in notificationsSettings)
+            {
+                var lessons = await this.GetLessonsForStudent(notificationsSetting.StudentId);
+                foreach (var lesson in lessons)
+                {
+                    var notificationTime = DateTime.Parse(lesson.TimeStart)
+                        .AddMinutes(-notificationsSetting.TimeBeforeLesson).TimeOfDay;
+                    var firetime = new FireTime
+                    {
+                        Time = notificationTime,
+                        NumberOfDay = lesson.DayOfWeek,
+                        NumberOfWeek = lesson.DayOfWeek
+                    };
+                    // get notification time 
+                    if (!fireTimes.Contains(firetime))
+                    {
+                        fireTimes.Add(firetime);
+                    }
+                }
+            }
+
+            return fireTimes;
         }
 
 

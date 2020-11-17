@@ -16,16 +16,10 @@ namespace Rozklad.V2.DataAccess
 
         public DbSet<Group> Groups { get; set; }
 
-        public DbSet<DisabledSubject> DisabledSubjects { get; set; }
+        public DbSet<DisabledSubject> DisabledSubjects { get; set; } 
+        
+        public DbSet<NotificationsSettings> NotificationsSettings { get; set; }
 
-        // protected override void OnModelCreating(ModelBuilder modelBuilder)
-        // {
-        //     modelBuilder.HasDefaultSchema("v2");
-        //     base.OnModelCreating(modelBuilder);
-        // }
-        // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) 
-        // {
-        //      optionsBuilder.UseNpgsql("User ID =postgres;Password=postgres;Server=localhost;Port=5432;Database=Rozklad;Integrated Security=true;Pooling=true;");
-        // }
+        public DbSet<Notification> Notifications { get; set; }
     }
 }
