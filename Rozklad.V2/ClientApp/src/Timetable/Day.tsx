@@ -14,7 +14,7 @@ function Day(props: DayProps) {
         height: "1000px",
     };
     const lessonsSorted: Array<LessonWithSubject> = [];
-    props.lessons.map((l) => {
+    props.lessons.forEach((l) => {
         switch (l.timeStart) {
             case "8:30:00":
                 lessonsSorted[0] = l;

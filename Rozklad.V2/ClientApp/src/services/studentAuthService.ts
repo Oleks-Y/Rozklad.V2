@@ -15,7 +15,7 @@ class StudentAuthService {
     private group: string | null = null
     private student: StudentDto | null = null
 
-    // todo maybe better to save student too 
+    // todo maybe better to save student too
     constructor() {
         const token = localStorage.getItem("token")
         const group = localStorage.getItem("group")
@@ -32,10 +32,10 @@ class StudentAuthService {
     }
     groupLogin = (group:string) =>{
         this.setGroup(group)
-        localStorage.setItem("group",group)    
+        localStorage.setItem("group",group)
     }
     async login(studentData: AuthRequestData) {
-        const response = await fetch(`${window.location.protocol}//${window.location.host}/${restApiUrl}/student/telegram`, {
+        const response = await fetch(`${restApiUrl}/student/telegram`, {
             method: "POST",
             headers: {
                 Accept: "*/*",
@@ -45,11 +45,11 @@ class StudentAuthService {
             body: JSON.stringify(studentData) || null
         });
         if (response.status === 400) {
-            // info not valid 
+            // info not valid
             throw new InvalidDataError(await response.json())
         }
         if (response.status !== 200) {
-            // error here  
+            // error here
             throw new Error(await response.json())
         }
         const student: StudentDto = await response.json()
@@ -75,7 +75,7 @@ class StudentAuthService {
         this.token = token
 
     }
-    
+
     getToken() {
         return this.token
     }

@@ -3,7 +3,7 @@ import {SubjectDto} from "../models/Subject";
 
 export class subjectsService {
     static async getSubjects(studentId: string, token: string): Promise<SubjectDto[]> {
-        const url: string = `${window.location.protocol}//${window.location.host}/${restApiUrl}/student/${studentId}/subjects`
+        const url: string = `${restApiUrl}/student/${studentId}/subjects`
         const response = await fetch(
             url,
             {
@@ -12,11 +12,11 @@ export class subjectsService {
                 }
             }
         );
-        return (await response.json()) as SubjectDto[];
+        return response.json();
     }
 
     static async updateSubjects(studentId: string, subjects: string[], token: string) {
-        const url: string = `${window.location.protocol}//${window.location.host}/${restApiUrl}/student/${studentId}`
+        const url: string = `${restApiUrl}/student/${studentId}`
         const body =
             [
                 {
@@ -40,7 +40,7 @@ export class subjectsService {
     }
 
     static async getSubjectsToChoice(studentId: string) {
-        const url: string = `${window.location.protocol}//${window.location.host}/${restApiUrl}/student/${studentId}/subject/choice`
+        const url: string = `${restApiUrl}/student/${studentId}/subject/choice`
         const response = await fetch(
             url
         );
@@ -48,7 +48,7 @@ export class subjectsService {
     }
 
     static async updateSubjectLinks(type: string, link: string, subjectId: string, token: string) {
-        const url: string = `${window.location.protocol}//${window.location.host}/${restApiUrl}/subject/${subjectId}`
+        const url: string = `${restApiUrl}/subject/${subjectId}`
         const body =
             [
                 {
@@ -73,7 +73,7 @@ export class subjectsService {
         return result;
     }
     static async getDisabledSubjects(studentId : string, token :string):Promise<SubjectDto[]>{
-        const url: string = `${window.location.protocol}//${window.location.host}/${restApiUrl}/student/${studentId}/subjects/disabled`
+        const url: string = `${restApiUrl}/student/${studentId}/subjects/disabled`
         const response = await fetch(
             url,
             {
@@ -85,7 +85,7 @@ export class subjectsService {
         return (await response.json()) as SubjectDto[];
     }
     static async disableSubject(subjectId: string, studentId: string, token: string): Promise<boolean> {
-        const url: string = `${window.location.protocol}//${window.location.host}/${restApiUrl}/student/${studentId}/subjects/${subjectId}/disable`
+        const url: string = `${restApiUrl}/student/${studentId}/subjects/${subjectId}/disable`
         const result = await fetch(url, {
             method: "PATCH",
             headers: {
@@ -101,7 +101,7 @@ export class subjectsService {
     }
 
     static async enableSubject(subjectId: string, studentId: string, token: string): Promise<boolean> {
-        const url: string = `${window.location.protocol}//${window.location.host}/${restApiUrl}/student/${studentId}/subjects/${subjectId}/enable`
+        const url: string = `${restApiUrl}/student/${studentId}/subjects/${subjectId}/enable`
         const result = await fetch(url, {
             method: "PATCH",
             headers: {

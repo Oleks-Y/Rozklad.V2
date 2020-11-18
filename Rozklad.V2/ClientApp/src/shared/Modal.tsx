@@ -1,14 +1,14 @@
 ﻿import React, {useEffect, useState} from "react";
 import TelegramLoginForSite from "../Layouts/Login/TelegramLoginForSite";
-import {Button, Modal} from "react-bootstrap"; 
+import {Button, Modal} from "react-bootstrap";
 interface ModalProps{
     show: boolean
     title : string
     bodyText : string
-    body : React.ReactNode 
+    body : React.ReactNode
 }
 
-function ModalWindow(props : ModalProps){
+const ModalWindow = (props : ModalProps) => {
     const [showModal, setShowModal] = useState<boolean>(true)
     const loginModal = ()=>{
         setShowModal(true)

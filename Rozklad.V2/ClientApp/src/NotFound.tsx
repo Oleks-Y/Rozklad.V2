@@ -1,7 +1,7 @@
 import React from "react";
 
-function NotFound() {
-  return <h1>This page not found</h1>;
+const NotFound = () => {
+  return <h1 style={{textAlign: 'center'}}>This page not found</h1>;
 }
 
 export default NotFound;

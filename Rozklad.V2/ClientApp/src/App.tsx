@@ -6,7 +6,9 @@ import LoginLayout from "./Layouts/Login/LoginLayout";
 import Site from "./Layouts/Site/Site";
 import StudentAuthService from "./services/studentAuthService";
 import {PrivateRoute} from "./GuardedRoute";
-function App() {
+import NotFound from "./NotFound";
+
+const App = () => {
   const loginService = new StudentAuthService();
   const isAuthentificated = loginService.isAuthentificated();
   console.log(isAuthentificated);
@@ -18,9 +20,10 @@ function App() {
       <Route exact path="/">
         <Redirect to="/site" />
       </Route>
+        <Route to="*" exact component={NotFound}/>
     </BrowserRouter>
   );
-    
+
 }
 
 export default App;
