@@ -21,6 +21,7 @@ using Rozklad.V2.Helpers;
 using Rozklad.V2.Scheduler;
 using Rozklad.V2.Scheduler.Jobs;
 using Rozklad.V2.Services;
+using Rozklad.V2.Telegram;
 
 namespace Rozklad.V2
 {
@@ -107,6 +108,8 @@ namespace Rozklad.V2
             // Add jobs 
             services.AddSingleton<NotificationJob>();
             services.AddHostedService<QuartzHostedService>();
+            Bot.GetBotClientAsync(appSettings).Wait();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -124,6 +127,7 @@ namespace Rozklad.V2
                
             }
             
+            // it needs for create bot service and setWebhook
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 

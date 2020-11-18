@@ -13,5 +13,7 @@ namespace Rozklad.V2.Models
         public string LessonsZoom { get; set; }
         public string LabsZoom { get; set; }
         public bool IsRequired { get; set; }
+        public string LessonsAccessCode { get; set; }
+        public string LabsAccessCode { get; set; }
     }
 }

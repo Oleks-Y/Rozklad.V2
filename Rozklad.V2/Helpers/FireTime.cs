@@ -10,6 +10,7 @@ namespace Rozklad.V2.Helpers
 
         public int NumberOfWeek  { get; set; }
 
+        public TimeSpan LessonTime { get; set; }
         public override bool Equals(object? obj)
         {
             return obj is FireTime fireTime1 

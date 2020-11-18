@@ -12,11 +12,10 @@ export const PrivateRoute = ({component: Component,accessWithGroup, ...rest}) =>
                 if(accessWithGroup){
                     return <Component {...props} />
                 }
-                // todo add message 
+               
                 return <Redirect to={{ pathname: '/login?message="Для цієї дії необхідно авторизуватись"', state: { from: props.location } }} />
             }
             else{
-                // todo add message
                 return <Redirect to={{ pathname: '/login', state: { from: props.location } }} />
             }
         }}/>

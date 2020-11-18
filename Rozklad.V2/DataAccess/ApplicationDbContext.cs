@@ -19,7 +19,6 @@ namespace Rozklad.V2.DataAccess
         public DbSet<DisabledSubject> DisabledSubjects { get; set; } 
         
         public DbSet<NotificationsSettings> NotificationsSettings { get; set; }
-
-        public DbSet<Notification> Notifications { get; set; }
+        
     }
 }

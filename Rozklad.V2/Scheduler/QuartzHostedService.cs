@@ -4,8 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using Quartz;
 using Quartz.Spi;
+using Rozklad.V2.Helpers;
 using Rozklad.V2.Scheduler.Jobs;
 using Rozklad.V2.Services;
 
@@ -67,6 +69,7 @@ namespace Rozklad.V2.Scheduler
                 .Create(jobType)
                 .WithIdentity(jobType.FullName)
                 .WithDescription(jobType.Name)
+                .UsingJobData("FireTime", JsonConvert.SerializeObject(schedule.FireTime))
                 .Build();
         }
 

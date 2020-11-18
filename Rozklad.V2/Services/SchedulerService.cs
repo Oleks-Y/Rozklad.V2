@@ -22,13 +22,20 @@ namespace Rozklad.V2.Services
         {
             var fireTimes = _repository.GetAllNotificationsFireTimes().GetAwaiter().GetResult();
             var crons = fireTimes.Select(f => 
-                new JobSchedule(typeof(NotificationJob), 
-                    calculateCronExpresion(f)));
+                // new JobSchedule(typeof(NotificationJob), 
+                //     calculateCronExpresion(f))
+                new JobSchedule
+                {
+                    JobType = typeof(NotificationJob),
+                    CronExpression = calculateCronExpresion(f),
+                    FireTime = f
+                }
+            );
             return crons;
         }
 
 
-        private string calculateCronExpresion(FireTime fireTime)
+        private static string calculateCronExpresion(FireTime fireTime)
         {
             // Todo error handling
             // generate expressions 

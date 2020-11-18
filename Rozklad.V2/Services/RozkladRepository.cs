@@ -43,7 +43,7 @@ namespace Rozklad.V2.Services
         //         .ThenBy(l=>l.DayOfWeek)
         //         .ThenBy(l=>l.TimeStart)
         //         .ToListAsync();
-        //     // todo exclude disabled lessons 
+        //     // 
         //     return lessons;
         // }
 
@@ -181,7 +181,8 @@ namespace Rozklad.V2.Services
                     {
                         Time = notificationTime,
                         NumberOfDay = lesson.DayOfWeek,
-                        NumberOfWeek = lesson.DayOfWeek
+                        NumberOfWeek = lesson.DayOfWeek,
+                        LessonTime = TimeSpan.Parse(lesson.TimeStart)
                     };
                     // get notification time 
                     if (!fireTimes.Contains(firetime))
@@ -192,6 +193,27 @@ namespace Rozklad.V2.Services
             }
 
             return fireTimes;
+        }
+
+        // time of lesson in format "8:30:00"
+        public async Task<IEnumerable<Notification>> GetAllNotificationsByThisTime(int lessonWeek, int dayOfWeek,
+            TimeSpan timeOfLesson)
+        {
+            // get all notifications 
+            // foreach student in notifications get all lessons  
+            // if lesson is next lesson, return it 
+            var notificationsSettings = await _context.NotificationsSettings.ToListAsync();
+            var notifications = new List<Notification>();
+            foreach (var notificationsSetting in notificationsSettings)
+            {
+                var lessons = await this.GetLessonsForStudent(notificationsSetting.StudentId);
+                notifications.AddRange(from lesson in lessons
+                    where lesson.Week == lessonWeek && lesson.DayOfWeek == dayOfWeek &&
+                          lesson.TimeStart == timeOfLesson.ToString()
+                    select new Notification {Lesson = lesson, StudentId = notificationsSetting.StudentId});
+            }
+
+            return notifications;
         }
 
 
