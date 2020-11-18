@@ -30,9 +30,12 @@ class StudentAuthService {
             this.setStudent(student)
         }
     }
+
+    // todo save recent choose group
+
     groupLogin = (group:string) =>{
         this.setGroup(group)
-        localStorage.setItem("group",group)
+        localStorage.setItem("group", group);
     }
     async login(studentData: AuthRequestData) {
         const response = await fetch(`${restApiUrl}/student/telegram`, {
@@ -63,7 +66,9 @@ class StudentAuthService {
         this.setGroup(null)
         this.setToken(null)
         this.setStudent(null)
-        localStorage.clear()
+        localStorage.removeItem('token');
+        localStorage.removeItem('student');
+        localStorage.removeItem('group');
     }
 
     isAuthentificated(): boolean {

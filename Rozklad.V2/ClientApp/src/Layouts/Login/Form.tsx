@@ -4,8 +4,10 @@ import StudentAuthService from "../../services/studentAuthService";
 import {Redirect} from "react-router-dom";
 import TelegramLogin from "./TelegramLogin";
 
+// todo пустые пропсы) код не трогаю, мб надо
 export interface LoginFormProps {
 }
+
 
 export default class Form extends React.Component {
     state = {submitMessage: "", redirect: false};
@@ -49,7 +51,7 @@ export default class Form extends React.Component {
             >
                 {(props) => (
                     <form className="user" onSubmit={props.handleSubmit}>
-                        
+
                         <div className="form-group">
                             <input
                                 className="form-control form-control-user"
@@ -112,9 +114,9 @@ export default class Form extends React.Component {
                         <TelegramLogin/>
                     </form>
                 )}
-                
+
             </Formik>
-            
+
         );
     }
 }

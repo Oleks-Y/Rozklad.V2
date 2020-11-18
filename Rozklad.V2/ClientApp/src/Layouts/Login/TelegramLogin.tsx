@@ -47,21 +47,22 @@ function TelegramLogin() {
     const service = new StudentAuthService()
     const onGroupChoosen = (groupString: string) => {
         if (!groups.includes(groupString.trim().toLowerCase())) {
-            // toast error 
+            // toast error
             Show()
             return
         }
-        setGroupName(groupString);
-        service.logout()
+        setGroupName(groupString.trim().toLowerCase());
+        service.logout();
+        // service.
         if (user == null) {
             // login with group
-            service.groupLogin(groupString)
+            service.groupLogin(groupString.trim().toLowerCase())
             setRedirect(true)
         } else {
             // normal login
             const dataToAith: AuthRequestData = {
                 telegramUser: user!,
-                group: groupString
+                group: groupString.trim().toLowerCase()
             }
             const response = service.login(dataToAith).then(r => {
                 setRedirect(true)
@@ -93,21 +94,23 @@ function TelegramLogin() {
                 </Modal.Footer>
             </Modal>
             {hiddenTelega ? <div/> :
-                <div><TelegramLoginButton botName={"RozkladDevelopment_bot"}
-                                          buttonSize="large"
-                                          cornerRadius={2}
-                                          dataOnauth={dataOnAuth}
-                                          requestAccess={"write"}
-                                          usePic={true}/>
+                <div>
+                    <TelegramLoginButton
+                        botName={"RozkladDevelopment_bot"}
+                        buttonSize="large"
+                        cornerRadius={2}
+                        dataOnauth={dataOnAuth}
+                        requestAccess={"write"}
+                        usePic={true}/>
                     <a className="btn btn-secondary" role="button" onClick={() => {
                         setHiddenTelega(true);
                         setHiddenGroup(false);
                         setLoginType("groupWatch")
                         setShowBack(true)
                     }}>
-                <span className="text-white text" style={{display: "block"}}>
-                    Переглянути без логіну
-                </span>
+                    <span className="text-white text" style={{display: "block"}}>
+                        Переглянути без логіну
+                    </span>
                     </a>
                 </div>
             }

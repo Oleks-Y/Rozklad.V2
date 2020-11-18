@@ -44,7 +44,6 @@ class GroupSelect extends React.Component<GroupSelectProps> {
         });
     };
 
-
     onSuggestionsFetchRequested = (hz: any) => {
         this.setState({
             suggestions: getSuggestions(hz.value)
@@ -98,5 +97,5 @@ class GroupSelect extends React.Component<GroupSelectProps> {
     }
 }
 
-// if group not exist, disable button 
+// if group not exist, disable button
 export default GroupSelect

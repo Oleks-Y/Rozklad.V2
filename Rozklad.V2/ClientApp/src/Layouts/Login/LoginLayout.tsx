@@ -26,6 +26,7 @@ function LoginLayout() {
         }
     }
     return (
+        // todo зачем столько контейнеров?)
         <div className="container">
             <div className="row justify-content-center">
                 <div className="col-md-9 col-lg-12 col-xl-10">
@@ -46,7 +47,6 @@ function LoginLayout() {
                                         </div>
                                         {renderAlert()}
                                         <TelegramLogin/>
-
                                         <div className="text-center"/>
                                     </div>
                                 </div>
