@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Rozklad.V2.DataAccess;
 using Rozklad.V2.Entities;
+using Rozklad.V2.Exceptions;
 using Rozklad.V2.Helpers;
 using Rozklad.V2.Models;
 
@@ -214,6 +216,43 @@ namespace Rozklad.V2.Services
             }
 
             return notifications;
+        }
+
+        public async Task AddUserTelegramChatInfoAsync(TelegramData data)
+        {
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.Id == data.StudentId);
+            if (student == null)
+            {
+                throw new ArgumentException(nameof(TelegramData));
+            }
+            
+            await _context.TelegramData.AddAsync(data);
+        }
+
+        public async Task<bool> UserDataExistsAsync(long telegramId)
+        {
+            var isExist = await _context.TelegramData.AnyAsync(d => d.TelegramId == telegramId);
+
+            return isExist;
+        }
+
+        public async Task AddUserChatId(long telegramId,long chatId)
+        {
+           var data= await _context.TelegramData.FirstOrDefaultAsync(s => s.TelegramId == telegramId);
+           if (data == null)
+           {
+               throw new ArgumentNullException(nameof(telegramId));
+           }
+           if (data.TelegramChatId != null)
+           {
+                throw new TelegramChatIdExistsException(); 
+           }
+           data.TelegramChatId = chatId;
+        }
+
+        public Task<Student> GetUserByTelegramId(long telegramId)
+        {
+            return _context.Students.FirstOrDefaultAsync(s=>s.Telegram_Id == telegramId);
         }
 
 

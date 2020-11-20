@@ -37,5 +37,19 @@ namespace Rozklad.V2.Scheduler
 
             _jobSchedules = jobSchedules;
         }
+
+        public void RefreshJobs()
+        {
+            var jobSchedules = _schedulerService.GetJobSchedules();
+            foreach (var jobSchedule in jobSchedules.ToArray().AsParallel())
+            {
+                _recurringJobManager.RemoveIfExists(jobSchedule.Cron);
+                _recurringJobManager.AddOrUpdate(jobSchedule.Cron,
+                    () =>  _notificationJob.Execute(jobSchedule.FireTime),
+                    jobSchedule.Cron);
+                
+            }
+            _jobSchedules = jobSchedules;
+        }
     }
 }

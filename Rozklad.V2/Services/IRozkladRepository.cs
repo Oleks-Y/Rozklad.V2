@@ -38,6 +38,11 @@ namespace Rozklad.V2.Services
         Task<IEnumerable<Notification>> GetAllNotificationsByThisTime(int lessonWeek, int dayOfWeek,
             TimeSpan timeOfLesson);
 
+        Task AddUserTelegramChatInfoAsync(TelegramData data);
+        Task<bool> UserDataExistsAsync(long telegramId);
+        Task AddUserChatId(long telegramId,long chatId);
+
+        Task<Student> GetUserByTelegramId(long telegramId);
         Task SaveAsync();
     }
 }

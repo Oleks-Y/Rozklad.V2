@@ -6,8 +6,7 @@ namespace Rozklad.V2.Services
     {
         public void SendNotification(Notification notification)
         {
-            // Todo store telegram chat_id
-            throw new System.NotImplementedException();
+            
         }
     }
 }
