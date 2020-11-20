@@ -21,7 +21,7 @@ namespace Rozklad.V2.Services
         public  IEnumerable<JobSchedule> GetJobSchedules()
         {
             var fireTimes = _repository.GetAllNotificationsFireTimes().GetAwaiter().GetResult();
-            var crons = fireTimes.Select(f => 
+            var schedules = fireTimes.Select(f => 
                 // new JobSchedule(typeof(NotificationJob), 
                 //     calculateCronExpresion(f))
                 new JobSchedule
@@ -31,7 +31,10 @@ namespace Rozklad.V2.Services
                     FireTime = f
                 }
             );
-            return crons;
+            // delete, if cronn count is more > 1 
+            var jobSchedules = schedules as JobSchedule[] ?? schedules.ToArray();
+            var distinctSchedules = jobSchedules.DistinctBy(s=>s.CronExpression).ToArray();
+            return distinctSchedules;    
         }
 
 

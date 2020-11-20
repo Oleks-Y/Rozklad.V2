@@ -106,7 +106,7 @@ namespace Rozklad.V2
             services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
             services.AddScoped<ISchedulerService, SchedulerService>();
             // Add jobs 
-            services.AddSingleton<NotificationJob>();
+            services.AddScoped<NotificationJob>();
             services.AddHostedService<QuartzHostedService>();
             Bot.GetBotClientAsync(appSettings).Wait();
 

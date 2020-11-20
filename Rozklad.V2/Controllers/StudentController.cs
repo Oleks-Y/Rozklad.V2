@@ -71,6 +71,10 @@ namespace Rozklad.V2.Controllers
                     return BadRequest(new {message = ex.Message});
                 }
             }
+            if (student.Group.Id != group.Id)
+            {
+                return BadRequest("Group is not match user group!");
+            }
             // Todo check something about security
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_appSettings.Secret);

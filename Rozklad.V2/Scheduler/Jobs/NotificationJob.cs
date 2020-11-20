@@ -10,6 +10,7 @@ using Rozklad.V2.Services;
 
 namespace Rozklad.V2.Scheduler.Jobs
 {
+    [DisallowConcurrentExecution]
     public class NotificationJob : IJob
     {
         private readonly ILogger<NotificationJob> _logger;
@@ -27,6 +28,7 @@ namespace Rozklad.V2.Scheduler.Jobs
             // call notificationService 
             var fireTimeString = context.MergedJobDataMap.GetString("FireTime");
             _logger.LogInformation("Here will be sent notifications to all ");
+            
             var fireTime = JsonConvert.DeserializeObject<FireTime>(fireTimeString, new JsonSerializerSettings
             {
                 Error = (object sender, ErrorEventArgs args) =>

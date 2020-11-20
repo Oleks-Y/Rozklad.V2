@@ -172,7 +172,7 @@ namespace Rozklad.V2.Services
             var fireTimes = new List<FireTime>();
             foreach (var notificationsSetting in notificationsSettings)
             {
-                var lessons = await this.GetLessonsForStudent(notificationsSetting.StudentId);
+                var lessons = await GetLessonsForStudent(notificationsSetting.StudentId);
                 foreach (var lesson in lessons)
                 {
                     var notificationTime = DateTime.Parse(lesson.TimeStart)
@@ -181,7 +181,7 @@ namespace Rozklad.V2.Services
                     {
                         Time = notificationTime,
                         NumberOfDay = lesson.DayOfWeek,
-                        NumberOfWeek = lesson.DayOfWeek,
+                        NumberOfWeek = lesson.Week,
                         LessonTime = TimeSpan.Parse(lesson.TimeStart)
                     };
                     // get notification time 

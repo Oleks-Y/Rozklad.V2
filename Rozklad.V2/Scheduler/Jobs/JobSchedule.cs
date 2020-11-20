@@ -14,5 +14,13 @@ namespace Rozklad.V2.Scheduler.Jobs
         
         public FireTime FireTime { get; set; }
 
+        public override bool Equals(object obj)
+        {
+            if (!(obj is JobSchedule scheduleToEqual))
+            {
+                return false;
+            }
+            return scheduleToEqual.CronExpression == this.CronExpression;
+        }
     }
 }

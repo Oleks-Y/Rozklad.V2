@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Quartz;
+using Quartz.Impl;
 using Quartz.Spi;
 using Rozklad.V2.Helpers;
 using Rozklad.V2.Scheduler.Jobs;
@@ -22,7 +23,7 @@ namespace Rozklad.V2.Scheduler
 
         public QuartzHostedService(
             ISchedulerFactory schedulerFactory,
-            IJobFactory jobFactory,
+            SingletonJobFactory jobFactory,
             IServiceProvider provider
         )
         {
@@ -33,7 +34,7 @@ namespace Rozklad.V2.Scheduler
             _schedulerService = scope.ServiceProvider.GetService<ISchedulerService>();
             RefreshSchedules();
         }
-
+        // Todo use event on disabled subjects or notifications changed
         public void RefreshSchedules()
         {
             _jobSchedules = _schedulerService.GetJobSchedules();
@@ -43,7 +44,7 @@ namespace Rozklad.V2.Scheduler
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            Scheduler = await _schedulerFactory.GetScheduler(cancellationToken);
+            Scheduler = await StdSchedulerFactory.GetDefaultScheduler(cancellationToken);
             Scheduler.JobFactory = _jobFactory;
 
             foreach (var jobSchedule in _jobSchedules)
@@ -77,7 +78,7 @@ namespace Rozklad.V2.Scheduler
         {
             return TriggerBuilder
                 .Create()
-                .WithIdentity($"{schedule.JobType.FullName}.trigger")
+                .WithIdentity($"{schedule.CronExpression}.trigger")
                 .WithCronSchedule(schedule.CronExpression)
                 .WithDescription(schedule.CronExpression)
                 .Build();
