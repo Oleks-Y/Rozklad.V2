@@ -2,6 +2,8 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,7 +21,6 @@ using Quartz.Spi;
 using Rozklad.V2.DataAccess;
 using Rozklad.V2.Helpers;
 using Rozklad.V2.Scheduler;
-using Rozklad.V2.Scheduler.Jobs;
 using Rozklad.V2.Services;
 using Rozklad.V2.Telegram;
 
@@ -100,20 +101,29 @@ namespace Rozklad.V2
                 });
             });
             
-            // QUARTZ 
-            // Add Quartz services 
-            services.AddSingleton<IJobFactory, SingletonJobFactory>();
-            services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
-            services.AddScoped<ISchedulerService, SchedulerService>();
-            // Add jobs 
-            services.AddScoped<NotificationJob>();
-            services.AddHostedService<QuartzHostedService>();
+           // HANGFIRE 
+           // Add Hangfire services.
+           services.AddHangfire(configuration => configuration
+               .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+               .UseSimpleAssemblyNameTypeSerializer()
+               .UseRecommendedSerializerSettings()
+               .UsePostgreSqlStorage(Configuration.GetConnectionString("HangfireConnection")));
+           
+           // Add the processing server as IHostedService
+           services.AddHangfireServer();
+           
+           // Add framework services.
+           services.AddMvc();
+           services.AddScoped<JobsManager>();
+           services.AddScoped<ISchedulerService, SchedulerService>();
+           services.AddScoped<INotificationJob, NotificationJob>();
+            // Telegram Bot start 
             Bot.GetBotClientAsync(appSettings).Wait();
 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,JobsManager jobsManager)
         {
             if (env.IsDevelopment())
             {
@@ -144,6 +154,7 @@ namespace Rozklad.V2
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
+                endpoints.MapHangfireDashboard();
             });
             app.UseSwagger()
                 .UseSwaggerUI(c =>
@@ -151,6 +162,7 @@ namespace Rozklad.V2
                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1" );
                     
                 });
+            app.UseHangfireDashboard();
             app.UseSpa(spa =>
             {
                 spa.Options.SourcePath = "ClientApp";
@@ -160,6 +172,8 @@ namespace Rozklad.V2
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
+            jobsManager.InitJobs();
+            
         }
     }
 }
