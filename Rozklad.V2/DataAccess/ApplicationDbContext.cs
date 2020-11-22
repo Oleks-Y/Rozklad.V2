@@ -8,7 +8,7 @@ namespace Rozklad.V2.DataAccess
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
-
+        
         public DbSet<Student> Students { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
 

@@ -30,6 +30,7 @@ namespace Rozklad.V2.Controllers
                 if (command.Contains(message))
                 {
                     await command.Execute(message, botClient, _repository);
+                    await _repository.SaveAsync();
                     break;
                 }
             }

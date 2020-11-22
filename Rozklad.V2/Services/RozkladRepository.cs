@@ -68,9 +68,12 @@ namespace Rozklad.V2.Services
         public async Task<IEnumerable<Lesson>> GetLessonsForStudent(Guid studentId)
         {
             var student = _context.Students.Include("Group").FirstOrDefault(s => s.Id == studentId);
+            
             var lessons = await _context.Lessons.Include("Subject")
                 .Where(l => l.Subject.GroupId == student.Group.Id).ToListAsync();
+            
             var disabledSubjects = _context.DisabledSubjects.Where(s => s.StudentId == student.Id);
+            
             var lessonsCopy = new Lesson[lessons.Count];
             lessons.CopyTo(lessonsCopy);
             foreach (var lesson in lessonsCopy.Where(lesson =>
@@ -198,9 +201,7 @@ namespace Rozklad.V2.Services
         }
 
         // time of lesson in format "8:30:00"
-        public async Task<IEnumerable<Notification>> GetAllNotificationsByThisTime(int lessonWeek, int dayOfWeek,
-            TimeSpan timeOfLesson)
-        {
+        public async Task<IEnumerable<Notification>> GetAllNotificationsByThisTime( FireTime fireTime){
             // get all notifications 
             // foreach student in notifications get all lessons  
             // if lesson is next lesson, return it 
@@ -210,8 +211,9 @@ namespace Rozklad.V2.Services
             {
                 var lessons = await this.GetLessonsForStudent(notificationsSetting.StudentId);
                 notifications.AddRange(from lesson in lessons
-                    where lesson.Week == lessonWeek && lesson.DayOfWeek == dayOfWeek &&
-                          lesson.TimeStart == timeOfLesson.ToString()
+                    where lesson.Week == fireTime.NumberOfWeek && lesson.DayOfWeek == fireTime.NumberOfDay &&
+                          // check if time format is ok 
+                          lesson.TimeStart == fireTime.LessonTime.ToString()
                     select new Notification {Lesson = lesson, StudentId = notificationsSetting.StudentId});
             }
 
@@ -225,7 +227,7 @@ namespace Rozklad.V2.Services
             {
                 throw new ArgumentException(nameof(TelegramData));
             }
-            
+
             await _context.TelegramData.AddAsync(data);
         }
 
@@ -236,23 +238,31 @@ namespace Rozklad.V2.Services
             return isExist;
         }
 
-        public async Task AddUserChatId(long telegramId,long chatId)
+        public async Task AddUserChatId(long telegramId, long chatId)
         {
-           var data= await _context.TelegramData.FirstOrDefaultAsync(s => s.TelegramId == telegramId);
-           if (data == null)
-           {
-               throw new ArgumentNullException(nameof(telegramId));
-           }
-           if (data.TelegramChatId != null)
-           {
-                throw new TelegramChatIdExistsException(); 
-           }
-           data.TelegramChatId = chatId;
+            var data = await _context.TelegramData.FirstOrDefaultAsync(s => s.TelegramId == telegramId);
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(telegramId));
+            }
+
+            if (data.TelegramChatId != null)
+            {
+                throw new TelegramChatIdExistsException();
+            }
+
+            data.TelegramChatId = chatId;
+        }
+
+        public async Task<IEnumerable<TelegramData>> GetUserTelegramData(IEnumerable<Guid> studentsIds)
+        {
+            var telegramDatas = await _context.TelegramData.Where(t => studentsIds.Contains(t.StudentId)).ToListAsync();
+            return telegramDatas;
         }
 
         public Task<Student> GetUserByTelegramId(long telegramId)
         {
-            return _context.Students.FirstOrDefaultAsync(s=>s.Telegram_Id == telegramId);
+            return _context.Students.FirstOrDefaultAsync(s => s.Telegram_Id == telegramId);
         }
 
 

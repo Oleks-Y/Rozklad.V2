@@ -1,9 +1,11 @@
-﻿using Rozklad.V2.Entities;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Rozklad.V2.Entities;
 
 namespace Rozklad.V2.Services
 {
     public interface ITelegramNotificationService
     {
-        void SendNotification(Notification notification);
+        Task SendNotifications(IEnumerable<Notification> notification);
     }
 }
