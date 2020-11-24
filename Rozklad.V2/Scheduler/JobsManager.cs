@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Hangfire;
+using Hangfire.Storage;
 using Rozklad.V2.Services;
 
 namespace Rozklad.V2.Scheduler
@@ -16,46 +17,57 @@ namespace Rozklad.V2.Scheduler
 
         private IEnumerable<JobSchedule> _jobSchedules;
 
-        public JobsManager(IRecurringJobManager recurringJobManager, INotificationJob notificationJob,
+        public JobsManager(IRecurringJobManager recurringJobManager, NotificationJob notificationJob,
             ISchedulerService schedulerService)
         {
             _recurringJobManager = recurringJobManager;
             _notificationJob = notificationJob;
             _schedulerService = schedulerService;
             _jobSchedules = new List<JobSchedule>();
+            
+            var defaultRetryFilter = GlobalJobFilters.Filters
+                .FirstOrDefault(f => f.Instance is AutomaticRetryAttribute);
+
+            if (defaultRetryFilter?.Instance != null)
+            {
+                GlobalJobFilters.Filters.Remove(defaultRetryFilter.Instance);
+            }
+            GlobalJobFilters.Filters.Add(new AutomaticRetryAttribute{ Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete});
         }
-        
+
         public void InitJobs()
         {
-            var jobSchedules = _schedulerService.GetJobSchedules();
+            var jobSchedules = _schedulerService.GetJobSchedules().GetAwaiter().GetResult();
             foreach (var jobSchedule in jobSchedules.ToArray().AsParallel())
+            {
+                _recurringJobManager.AddOrUpdate(jobSchedule.Cron,
+                    () => _notificationJob.Execute(jobSchedule.FireTime),
+                    jobSchedule.Cron);
+            }
+
+            this._jobSchedules = jobSchedules.ToArray();
+        }
+
+        public async Task RefreshJobs()
+        {
+            // delete all old schedules 
+            using (var connection = JobStorage.Current.GetConnection()) 
+            {
+                foreach (var recurringJob in StorageConnectionExtensions.GetRecurringJobs(connection)) 
+                {
+                    RecurringJob.RemoveIfExists(recurringJob.Id);
+                }
+            }
+            // Problem : every time ,when sending request for notificationController,
+            // all schedules delete and new will be write, but we have only replace jobs  
+            var jobSchedules = await _schedulerService.GetJobSchedules();
+            foreach (var jobSchedule in jobSchedules)
             {
                 _recurringJobManager.AddOrUpdate(jobSchedule.Cron,
                     () =>  _notificationJob.Execute(jobSchedule.FireTime),
                     jobSchedule.Cron);
-                
             }
-            this._jobSchedules = jobSchedules.ToArray();
-        }
 
-        public void RefreshJobs()
-        {
-            // delete all old schedules 
-            foreach (var jobSchedule in _jobSchedules)
-            {
-                _recurringJobManager.RemoveIfExists(jobSchedule.Cron);
-            }
-            // Problem : every time ,when sending request for notificationController,
-            // all schedules delete and new will be write, but we have only replace jobs  
-            var jobSchedules = _schedulerService.GetJobSchedules();
-            foreach (var jobSchedule in jobSchedules.ToArray().AsParallel())
-            {
-                
-                _recurringJobManager.AddOrUpdate(jobSchedule.Cron,
-                    () =>  _notificationJob.Execute(jobSchedule.FireTime).Wait(),
-                    jobSchedule.Cron);
-                
-            }
             _jobSchedules = jobSchedules;
         }
     }

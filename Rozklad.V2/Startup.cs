@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -105,6 +106,7 @@ namespace Rozklad.V2
            // Add Hangfire services.
            services.AddHangfire(configuration => configuration
                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+               .UseFilter(new AutomaticRetryAttribute{ Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete})
                .UseSimpleAssemblyNameTypeSerializer()
                .UseRecommendedSerializerSettings()
                .UsePostgreSqlStorage(Configuration.GetConnectionString("HangfireConnection")));
@@ -117,6 +119,7 @@ namespace Rozklad.V2
            services.AddScoped<JobsManager>();
            services.AddScoped<ISchedulerService, SchedulerService>();
            services.AddScoped<INotificationJob, NotificationJob>();
+           services.AddScoped<NotificationJob>();
            services.AddScoped<ITelegramNotificationService, TelegramNotificationService>();
             // Telegram Bot start 
             Bot.GetBotClientAsync(appSettings).Wait();
@@ -173,8 +176,8 @@ namespace Rozklad.V2
                     spa.UseReactDevelopmentServer(npmScript: "start");
                 }
             });
-            jobsManager.InitJobs();
             
+            jobsManager.RefreshJobs().GetAwaiter().GetResult();
         }
     }
 }

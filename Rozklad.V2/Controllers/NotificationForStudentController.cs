@@ -37,14 +37,20 @@ namespace Rozklad.V2.Controllers
             {
                 return NotFound();
             }
-
+            // todo if user select telegram notifications but don`t have telegram data return response to auth user
+            
             var notificationEntity = _mapper.Map<NotificationsSettings>(notificationsModel);
             notificationEntity.StudentId = studentId;
             await _repository.UpdateNotification(notificationEntity);
-            _jobsManager.RefreshJobs();
             await _repository.SaveAsync();
+            await _jobsManager.RefreshJobs();
+            var telegramDataExists = _repository.UserTelegramDataExists(studentId);
+            if (notificationsModel.NotificationType == "Telegram" && !telegramDataExists)
+            {
+                return Ok(new {message = "Для роботи нотифікацій через телеграм бот, потрібно авторизуватись через телеграм, зайти в телеграмм бот і натиснути /start"});
+            }
             return NoContent();
-
+            // if student telegram chat not exists, return it to client
         }
     }
 }

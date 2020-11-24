@@ -23,31 +23,36 @@ namespace Rozklad.V2.Services
         }
 
 
-        public async Task SendNotifications(IEnumerable<Notification> notifications)
+        public void SendNotifications(IEnumerable<Notification> notifications)
         {
-            // Todo check is correct this logic 
-            
-            
-            
             // check if chat id exists 
             // get all students 
-            var telegramData = (await _repository.GetUserTelegramData(notifications.Select(s => s.StudentId))).ToArray();
-            if (telegramData.Length==0)
+            
+            var studentIds = notifications.Select(s => s.StudentId).ToList();
+            var telegramData = _repository.GetUserTelegramData(studentIds).ToList();
+            if (telegramData.Count==0)
             {
-                // Todo add user to telegram data table when adds a user 
-                // No student data is in table 
+                // No students data is in table 
                 return;
             }
-            foreach(var notification in notifications.AsParallel().ToArray())
+            foreach(var notification in notifications)
             {
                 var studentId = notification.StudentId;
-                var chatId = telegramData.FirstOrDefault(s => s.StudentId == studentId).TelegramChatId;
+                var first = telegramData.FirstOrDefault(s => s.StudentId == studentId);
+                if (first == null)
+                {
+                    // it happens, when can`t find user data 
+                    _logger.LogError($"{notification.StudentId} don`t have telegram info, but uses telegram notification");
+                    continue;
+                }
+
+                var chatId = first.TelegramChatId;
                 if (chatId == null)
                 {
                     // chat Id not exists
                     _logger.LogWarning($"User {studentId} not have chatId");
                 }
-                await NotificationsAction.Send(notification, chatId.Value);
+                NotificationsAction.Send(notification, chatId.Value);
             }
         }
     }

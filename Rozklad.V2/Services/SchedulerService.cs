@@ -20,9 +20,9 @@ namespace Rozklad.V2.Services
         _repository = repository;
     }
     
-    public  IEnumerable<JobSchedule> GetJobSchedules()
+    public  async Task<IEnumerable<JobSchedule>> GetJobSchedules()
     {
-        var fireTimes = _repository.GetAllNotificationsFireTimes().GetAwaiter().GetResult();
+        var fireTimes = await _repository.GetAllNotificationsFireTimes();
         var schedules = fireTimes.Select(f => 
             // new JobSchedule(typeof(NotificationJob), 
             //     calculateCronExpresion(f))
@@ -41,7 +41,6 @@ namespace Rozklad.V2.Services
     
     private static string calculateCronExpresion(FireTime fireTime)
     {
-        // Todo error handling
         // generate expressions 
         // {seconds} {minutes} {hours} ? {DAY}#{numbersOfDayAtMonth}
         var dayName = fireTime.NumberOfDay switch
@@ -59,8 +58,7 @@ namespace Rozklad.V2.Services
         // треба додати можливість змінювати парність першого тижня з конфігурації
         // парні номера днів в місяці - перший тиждень 
         // непарні номера днів в місяці - другий тиждень 
-        // todo in cron can add month day with "-"
-        var cronString = $"0 {fireTime.Time.Minutes} {fireTime.Time.Hours} * * {dayName}";
+        var cronString = $"{fireTime.Time.Minutes} {fireTime.Time.Hours} * * {dayName}";
     
         return cronString;
     }

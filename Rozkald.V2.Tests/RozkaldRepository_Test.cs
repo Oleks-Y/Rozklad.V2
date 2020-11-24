@@ -14,6 +14,47 @@ namespace Rozkald.V2.Tests
     public class UnitTest1
     {
         [Fact]
+        public async void CanGetTelegramData()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(databaseName: "Rozklad2")
+                .Options;
+            var studentId1 = Guid.NewGuid();
+            var studentId2 = Guid.NewGuid();
+            using (var context = new ApplicationDbContext(options))
+            {
+                context.TelegramData.Add(new TelegramData
+                {
+                    Id = Guid.NewGuid(),
+                    StudentId = studentId1,
+                    TelegramId = 456955082,
+                    TelegramChatId = 456955082
+                });
+                context.TelegramData.Add(new TelegramData
+                {
+                    Id = Guid.NewGuid(),
+                    StudentId = studentId2,
+                    TelegramId = 456955082,
+                    TelegramChatId = 456955082
+                });
+
+                context.SaveChanges();
+            }
+            // Act 
+            var result = new List<TelegramData>();
+            using (var context = new ApplicationDbContext(options))
+            {
+                var Guids = new List<Guid>{ studentId1, studentId2};
+                var repository = new RozkladRepository(context);
+                result = (await repository.GetUserTelegramData(Guids)).ToList();
+            }
+            // Assert 
+            Assert.True(result.Count>0);
+            Assert.True(result[0].TelegramId==456955082);
+        }
+        
+        [Fact]
         public async void CanGetNotifications()
         {
             // Arrange

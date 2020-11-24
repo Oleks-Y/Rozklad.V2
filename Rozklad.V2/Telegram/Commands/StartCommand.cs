@@ -24,11 +24,9 @@ namespace Rozklad.V2.Telegram.Commands
                 var student = await repository.GetUserByTelegramId(message.Chat.Id);
                 if (student==null)
                 {
-                    // Todo debug database errors 
-                    // Todo debug bot functionality 
-                    // Todo add telegram notifications 
+                    //todo якщо користувач авторизований не через телеграм, то він отримає це повідомлення 
                     // student not in students
-                    await client.SendTextMessageAsync(message.Chat.Id, "Привіт! Цей бот буде надсилати тобі сповіщення про пари з сайту <domain>. Спочатку тобі потрібно зарєструватись тут", parseMode: ParseMode.Markdown);
+                    await client.SendTextMessageAsync(message.Chat.Id, "Привіт! Цей бот буде надсилати тобі сповіщення про пари з сайту <domain>. Спочатку тобі потрібно зарєструватись тут з допомогою телеграму", parseMode: ParseMode.Markdown);
                 }
                 await repository.AddUserTelegramChatInfoAsync(new TelegramData
                 {

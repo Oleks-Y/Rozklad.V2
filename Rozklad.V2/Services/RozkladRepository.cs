@@ -86,6 +86,28 @@ namespace Rozklad.V2.Services
                 .ThenBy(l => l.DayOfWeek)
                 .ThenBy(l => l.TimeStart)
                 .ToList();
+        } 
+        private IEnumerable<Lesson> GetLessonsForStudentSync(Guid studentId)
+        {
+            var student = _context.Students.Include("Group").FirstOrDefault(s => s.Id == studentId);
+            
+            var lessons = _context.Lessons.Include("Subject")
+                .Where(l => l.Subject.GroupId == student.Group.Id).ToList();
+            
+            var disabledSubjects = _context.DisabledSubjects.Where(s => s.StudentId == student.Id);
+            
+            var lessonsCopy = new Lesson[lessons.Count];
+            lessons.CopyTo(lessonsCopy);
+            foreach (var lesson in lessonsCopy.Where(lesson =>
+                disabledSubjects.Select(s => s.SubjectId).Contains(lesson.SubjectId)))
+            {
+                lessons.Remove(lesson);
+            }
+
+            return lessons.OrderBy(l => l.Week)
+                .ThenBy(l => l.DayOfWeek)
+                .ThenBy(l => l.TimeStart)
+                .ToList();
         }
 
         public Group GetGroupByName(string groupName)
@@ -177,6 +199,10 @@ namespace Rozklad.V2.Services
             var fireTimes = new List<FireTime>();
             foreach (var notificationsSetting in notificationsSettings)
             {
+                if (!notificationsSetting.IsNotificationsOn)
+                {
+                    continue;
+                }
                 var lessons = await GetLessonsForStudent(notificationsSetting.StudentId);
                 foreach (var lesson in lessons)
                 {
@@ -201,20 +227,29 @@ namespace Rozklad.V2.Services
         }
 
         // time of lesson in format "8:30:00"
-        public async Task<IEnumerable<Notification>> GetAllNotificationsByThisTime( FireTime fireTime){
+        public IEnumerable<Notification> GetAllNotificationsByThisTime( FireTime fireTime){
             // get all notifications 
             // foreach student in notifications get all lessons  
             // if lesson is next lesson, return it 
-            var notificationsSettings = await _context.NotificationsSettings.ToListAsync();
+            var notificationsSettings = _context.NotificationsSettings.ToList();
             var notifications = new List<Notification>();
             foreach (var notificationsSetting in notificationsSettings)
             {
-                var lessons = await this.GetLessonsForStudent(notificationsSetting.StudentId);
+                if (!notificationsSetting.IsNotificationsOn)
+                {
+                    continue;
+                }
+                var lessons = this.GetLessonsForStudentSync(notificationsSetting.StudentId);
                 notifications.AddRange(from lesson in lessons
                     where lesson.Week == fireTime.NumberOfWeek && lesson.DayOfWeek == fireTime.NumberOfDay &&
                           // check if time format is ok 
                           lesson.TimeStart == fireTime.LessonTime.ToString()
-                    select new Notification {Lesson = lesson, StudentId = notificationsSetting.StudentId});
+                    select new Notification
+                    {
+                        Lesson = lesson,
+                        StudentId = notificationsSetting.StudentId,
+                        Type = notificationsSetting.NotificationType
+                    });
             }
 
             return notifications;
@@ -254,10 +289,15 @@ namespace Rozklad.V2.Services
             data.TelegramChatId = chatId;
         }
 
-        public async Task<IEnumerable<TelegramData>> GetUserTelegramData(IEnumerable<Guid> studentsIds)
+        public IEnumerable<TelegramData> GetUserTelegramData(IEnumerable<Guid> studentsIds)
         {
-            var telegramDatas = await _context.TelegramData.Where(t => studentsIds.Contains(t.StudentId)).ToListAsync();
+            var telegramDatas =  _context.TelegramData.Where(s => studentsIds.Contains(s.StudentId)).ToList();
             return telegramDatas;
+        }
+
+        public bool UserTelegramDataExists(Guid studentId)
+        {
+            return _context.TelegramData.Any(s => s.StudentId == studentId);
         }
 
         public Task<Student> GetUserByTelegramId(long telegramId)

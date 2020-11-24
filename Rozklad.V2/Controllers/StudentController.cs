@@ -179,6 +179,5 @@ namespace Rozklad.V2.Controllers
         //
         //
         // }
-        // Todo add method for adding disabled subjects  
     }
 }

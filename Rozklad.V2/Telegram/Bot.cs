@@ -48,8 +48,8 @@ namespace Rozklad.V2.Telegram
         private static List<Command> _commandsList;
         public static TelegramBotClient BotClient => _botClient;
         public static IReadOnlyList<Command> Commands => _commandsList.AsReadOnly();
-        
-        
+
+        public static TelegramBotClient GetBotClient() => _botClient;
         public static async Task<TelegramBotClient> GetBotClientAsync(AppSettings appSettings)
         {
             if (_botClient != null)
@@ -60,7 +60,7 @@ namespace Rozklad.V2.Telegram
             _commandsList = new List<Command> {new StartCommand()};
 
             _botClient = new TelegramBotClient(appSettings.BotToken);
-            await _botClient.SetWebhookAsync(appSettings.Url+"api/message/update");
+            await _botClient.SetWebhookAsync(appSettings.Url+"/api/message/update");
             return _botClient;
         }
     }
