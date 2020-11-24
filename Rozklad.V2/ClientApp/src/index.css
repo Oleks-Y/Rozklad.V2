@@ -76,3 +76,49 @@ code {
 .react-autosuggest__suggestion--highlighted {
   background-color: #ddd;
 }
+
+.recent-groups{
+  display: flex;
+  justify-content: space-around;
+}
+
+.recent-groups__button{
+  transition: .2s ease;
+  height: 26px;
+  padding: 0;
+  border: 1px solid #C7C7C7;
+  border-left: none;
+  border-right: none;
+  position: relative;
+}
+
+.recent-groups__button:focus{
+  outline: none;
+}
+
+.recent-groups__button:hover{
+  filter: brightness(90%);
+}
+
+.recent-groups__button:before,.recent-groups__button:after{
+  content: "";
+  display: block;
+  position: absolute;
+  width: 13px;
+  height: 26px;
+  background: inherit;
+  top: 0;
+  transform: translateY(-1px);
+  border: 1px solid #C7C7C7;
+}
+
+.recent-groups__button:after{
+  border-radius: 0 100% 100% 0 / 0 50% 50% 0;
+  left: 100%;
+  border-left: none;
+}
+.recent-groups__button:before{
+  border-radius: 100% 0 0 100% / 50% 0 0 50%;
+  right: 100%;
+  border-right: none;
+}

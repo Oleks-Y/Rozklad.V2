@@ -20,6 +20,7 @@ function TelegramLogin() {
     const [redirect, setRedirect] = useState<boolean>(false)
     const [showModal, setShowModal] = useState<boolean>(false)
     const [showBack, setShowBack] = useState<boolean>(false)
+    const [recentGroups, setRecentGroups] = useState<Array<string>|null>(null);
 
     const dataOnAuth = (user: UserFromTelegram) => {
         console.log(user)
@@ -39,6 +40,9 @@ function TelegramLogin() {
         }
 
     })
+    useEffect(()=>{
+        setRecentGroups(service.getRecentGroups())
+    },[])
     const renderRedirect = () => {
         if (redirect) {
             return <Redirect to="/site"/>;
@@ -56,7 +60,9 @@ function TelegramLogin() {
         // service.
         if (user == null) {
             // login with group
-            service.groupLogin(groupString.trim().toLowerCase())
+            const group = groupString.trim().toLowerCase();
+            service.groupLogin(group);
+            service.saveRecentGroup(group);
             setRedirect(true)
         } else {
             // normal login
@@ -124,6 +130,18 @@ function TelegramLogin() {
                 setHiddenTelega(false)
                 setLoginType("login")
             }}><i className="fa fa-arrow-up"/></button> : <div/>}
+            {
+                recentGroups ?
+                    <div className="recent-groups">
+                        {
+                            recentGroups.map(group =>
+                                <button
+                                    className="recent-groups__button"
+                                    onClick={() => onGroupChoosen(group)}>{group}</button>
+                            )
+                        }
+                    </div> :  null
+            }
         </div>
     )
 }

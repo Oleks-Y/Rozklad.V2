@@ -37,6 +37,23 @@ class StudentAuthService {
         this.setGroup(group)
         localStorage.setItem("group", group);
     }
+
+    saveRecentGroup(group: string){
+        const previous = localStorage.getItem('recentGroups');
+        if(previous===null)
+            return localStorage.setItem('recentGroups', JSON.stringify([group]));
+        const groups = JSON.parse(previous);
+        groups[1] = groups[0];
+        groups[0] = group;
+        localStorage.setItem('recentGroups', JSON.stringify(groups));
+    }
+
+    getRecentGroups(): Array<string>|null{
+        const groups = localStorage.getItem('recentGroups');
+        if(groups===null) return null;
+        return JSON.parse(groups);
+    }
+
     async login(studentData: AuthRequestData) {
         const response = await fetch(`${restApiUrl}/student/telegram`, {
             method: "POST",
