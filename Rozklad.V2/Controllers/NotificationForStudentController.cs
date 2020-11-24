@@ -37,7 +37,6 @@ namespace Rozklad.V2.Controllers
             {
                 return NotFound();
             }
-            // todo if user select telegram notifications but don`t have telegram data return response to auth user
             
             var notificationEntity = _mapper.Map<NotificationsSettings>(notificationsModel);
             notificationEntity.StudentId = studentId;

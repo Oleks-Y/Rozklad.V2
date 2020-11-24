@@ -26,7 +26,7 @@ namespace Rozklad.V2.Controllers
         private IMapper _mapper;
         private readonly AppSettings _appSettings;
         private readonly IRozkladRepository _repository;
-
+        // Todo : add refresh tokens 
         public StudentController(IStudentService studentService, IMapper mapper, IOptions<AppSettings> appSettings,
             IRozkladRepository repository)
         {
@@ -75,7 +75,6 @@ namespace Rozklad.V2.Controllers
             {
                 return BadRequest("Group is not match user group!");
             }
-            // Todo check something about security
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
             var tokenDescriptor = new SecurityTokenDescriptor()

@@ -11,9 +11,11 @@ namespace Rozklad.V2.Controllers
     {
         private readonly IRozkladRepository _repository;
 
-        public TelegramMessageController(IRozkladRepository repository)
+        private readonly ICommandFactory _commandFactory;
+        public TelegramMessageController(IRozkladRepository repository, ICommandFactory commandFactory)
         {
             _repository = repository;
+            _commandFactory = commandFactory;
         }
 
         [HttpPost]
@@ -23,17 +25,11 @@ namespace Rozklad.V2.Controllers
 
             var commands = Bot.Commands;
             var message = update.Message;
-            var botClient = Bot.BotClient;
-
-            foreach (var command in commands)
-            {
-                if (command.Contains(message))
-                {
-                    await command.Execute(message, botClient, _repository);
-                    await _repository.SaveAsync();
-                    break;
-                }
-            }
+            var command = _commandFactory.GetCommand(message);
+            // todo it not work, rewrite it with interface
+            if(command!=null)
+                await command.Execute(message, Bot.BotClient);
+            await _repository.SaveAsync();
             return Ok();
         }
     }

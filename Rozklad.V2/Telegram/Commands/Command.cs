@@ -7,9 +7,9 @@ namespace Rozklad.V2.Telegram.Commands
 {
     public  abstract class Command
     {
-        public abstract string Name { get; }
+        public static string Name { get; }
 
-        public abstract Task Execute(Message message, TelegramBotClient client,IRozkladRepository repository);
+        public abstract Task Execute(Message message, TelegramBotClient client);
 
         public abstract bool Contains(Message message);
     }

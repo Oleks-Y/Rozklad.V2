@@ -11,24 +11,31 @@ namespace Rozklad.V2.Telegram.Commands
 {
     public class StartCommand : Command
     {
-        public override string Name => @"/start";
-        public override async Task Execute(Message message, TelegramBotClient client, IRozkladRepository repository)
+        private readonly IRozkladRepository _repository;
+
+        public StartCommand(IRozkladRepository repository)
+        {
+            _repository = repository;
+        }
+
+        public static string Name => @"/start";
+        public override async Task Execute(Message message, TelegramBotClient client)
         {
             // if not exist 
             // Add student chat id
-            var isExist = await repository.UserDataExistsAsync(message.From.Id);
+            var isExist = await _repository.UserDataExistsAsync(message.From.Id);
             if (!isExist)
             {
                 // user not in database 
                 // check if it student 
-                var student = await repository.GetUserByTelegramId(message.Chat.Id);
+                var student = await _repository.GetUserByTelegramId(message.Chat.Id);
                 if (student==null)
                 {
-                    //todo якщо користувач авторизований не через телеграм, то він отримає це повідомлення 
+                    // якщо користувач авторизований не через телеграм, то він отримає це повідомлення 
                     // student not in students
                     await client.SendTextMessageAsync(message.Chat.Id, "Привіт! Цей бот буде надсилати тобі сповіщення про пари з сайту <domain>. Спочатку тобі потрібно зарєструватись тут з допомогою телеграму", parseMode: ParseMode.Markdown);
                 }
-                await repository.AddUserTelegramChatInfoAsync(new TelegramData
+                await _repository.AddUserTelegramChatInfoAsync(new TelegramData
                 {
                     Id = Guid.NewGuid(),
                     StudentId = student.Id,

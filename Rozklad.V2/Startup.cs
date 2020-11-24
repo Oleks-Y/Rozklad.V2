@@ -24,6 +24,7 @@ using Rozklad.V2.Helpers;
 using Rozklad.V2.Scheduler;
 using Rozklad.V2.Services;
 using Rozklad.V2.Telegram;
+using Rozklad.V2.Telegram.Commands;
 
 namespace Rozklad.V2
 {
@@ -122,6 +123,10 @@ namespace Rozklad.V2
            services.AddScoped<NotificationJob>();
            services.AddScoped<ITelegramNotificationService, TelegramNotificationService>();
             // Telegram Bot start 
+            services.AddScoped<Command, StartCommand>();
+            services.AddScoped<Command, DisableNotificationsCommand>();
+            services.AddScoped<Command, EnableNotificationsCommand>();
+            services.AddScoped<ICommandFactory, CommandFactory>();
             Bot.GetBotClientAsync(appSettings).Wait();
 
         }

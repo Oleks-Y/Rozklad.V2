@@ -43,6 +43,7 @@ namespace Rozklad.V2.Services
         IEnumerable<TelegramData> GetUserTelegramData(IEnumerable<Guid> studentsIds);
         bool UserTelegramDataExists(Guid studentId);
         Task<Student> GetUserByTelegramId(long telegramId);
+        
         Task SaveAsync();
     }
 }

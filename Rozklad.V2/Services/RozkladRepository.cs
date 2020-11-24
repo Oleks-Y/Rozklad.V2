@@ -197,12 +197,9 @@ namespace Rozklad.V2.Services
             // select all unique notification times  
             var notificationsSettings = await _context.NotificationsSettings.ToListAsync();
             var fireTimes = new List<FireTime>();
-            foreach (var notificationsSetting in notificationsSettings)
+            foreach (var notificationsSetting in 
+                notificationsSettings.Where(notificationsSetting => notificationsSetting.IsNotificationsOn))
             {
-                if (!notificationsSetting.IsNotificationsOn)
-                {
-                    continue;
-                }
                 var lessons = await GetLessonsForStudent(notificationsSetting.StudentId);
                 foreach (var lesson in lessons)
                 {
@@ -304,8 +301,7 @@ namespace Rozklad.V2.Services
         {
             return _context.Students.FirstOrDefaultAsync(s => s.Telegram_Id == telegramId);
         }
-
-
+        
         public async Task SaveAsync()
         {
             await _context.SaveChangesAsync();

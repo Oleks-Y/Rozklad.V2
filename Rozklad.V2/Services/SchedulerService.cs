@@ -53,11 +53,6 @@ namespace Rozklad.V2.Services
             6 => "SAT",
             _ => ""
         };
-        // Todo 
-        // Ну це звичайно ще та х#йня,
-        // треба додати можливість змінювати парність першого тижня з конфігурації
-        // парні номера днів в місяці - перший тиждень 
-        // непарні номера днів в місяці - другий тиждень 
         var cronString = $"{fireTime.Time.Minutes} {fireTime.Time.Hours} * * {dayName}";
     
         return cronString;
