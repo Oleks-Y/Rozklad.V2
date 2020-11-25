@@ -9,7 +9,6 @@ namespace Rozklad.V2.Telegram
 {
     public class CommandFactory : ICommandFactory
     {
-        private List<Command> _commandsList;
 
         private readonly IServiceProvider _serviceProvider;
 
@@ -18,24 +17,25 @@ namespace Rozklad.V2.Telegram
             _serviceProvider = serviceProvider;
         }
 
-        public Command GetCommand(Message message)
+        public ICommand GetCommand(Message message)
         {
             if(message.Type != MessageType.Text)
             {
                 return null;
             }
+            Console.WriteLine(message.Text);
             var commandString = message.Text;
-            if (commandString==StartCommand.Name)
+            if (StartCommand.Name.Contains(commandString))
             {
-                return _serviceProvider.GetService<StartCommand>();
+                return _serviceProvider.GetRequiredService<StartCommand>();
             }
-            if (commandString==EnableNotificationsCommand.Name)
+            if (commandString.Contains(EnableNotificationsCommand.Name))
             {
-                return _serviceProvider.GetService<EnableNotificationsCommand>();
+                return _serviceProvider.GetRequiredService<EnableNotificationsCommand>();
             }
-            if (commandString==DisableNotificationsCommand.Name)
+            if (DisableNotificationsCommand.Name.Contains(commandString))
             {
-                return _serviceProvider.GetService<DisableNotificationsCommand>();
+                return _serviceProvider.GetRequiredService<DisableNotificationsCommand>();
             }
 
             return null;

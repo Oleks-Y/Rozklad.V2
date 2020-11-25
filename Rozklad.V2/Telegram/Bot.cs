@@ -45,9 +45,9 @@ namespace Rozklad.V2.Telegram
     public class Bot
     {
         private static TelegramBotClient _botClient;
-        private static List<Command> _commandsList;
+        // private static List<Command> _commandsList;
         public static TelegramBotClient BotClient => _botClient;
-        public static IReadOnlyList<Command> Commands => _commandsList.AsReadOnly();
+        // public static IReadOnlyList<Command> Commands => _commandsList.AsReadOnly();
         
         // Todo add command to disable/enable notifications 
 

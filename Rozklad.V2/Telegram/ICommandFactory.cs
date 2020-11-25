@@ -5,6 +5,6 @@ namespace Rozklad.V2.Telegram
 {
     public interface ICommandFactory
     {
-        public Command GetCommand(Message message);
+        public ICommand GetCommand(Message message);
     }
 }

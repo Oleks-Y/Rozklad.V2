@@ -123,9 +123,9 @@ namespace Rozklad.V2
            services.AddScoped<NotificationJob>();
            services.AddScoped<ITelegramNotificationService, TelegramNotificationService>();
             // Telegram Bot start 
-            services.AddScoped<Command, StartCommand>();
-            services.AddScoped<Command, DisableNotificationsCommand>();
-            services.AddScoped<Command, EnableNotificationsCommand>();
+            services.AddScoped<StartCommand>();
+            services.AddScoped<DisableNotificationsCommand>();
+            services.AddScoped<EnableNotificationsCommand>();
             services.AddScoped<ICommandFactory, CommandFactory>();
             Bot.GetBotClientAsync(appSettings).Wait();
 

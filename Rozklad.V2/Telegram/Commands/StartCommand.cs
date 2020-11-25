@@ -9,7 +9,7 @@ using Telegram.Bot.Types;
 
 namespace Rozklad.V2.Telegram.Commands
 {
-    public class StartCommand : Command
+    public class StartCommand : ICommand
     {
         private readonly IRozkladRepository _repository;
 
@@ -19,7 +19,7 @@ namespace Rozklad.V2.Telegram.Commands
         }
 
         public static string Name => @"/start";
-        public override async Task Execute(Message message, TelegramBotClient client)
+        public  async Task Execute(Message message, TelegramBotClient client)
         {
             // if not exist 
             // Add student chat id
@@ -47,7 +47,7 @@ namespace Rozklad.V2.Telegram.Commands
             await client.SendTextMessageAsync(chatId, "Привіт! Цей бот буде надсилати тобі сповіщення про пари з сайту <domain>", parseMode: ParseMode.Markdown);
         }
 
-        public override bool Contains(Message message)
+        public  bool Contains(Message message)
         {
             return message.Type == MessageType.Text 
                    && message.Text.Contains(Name);

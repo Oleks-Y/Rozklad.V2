@@ -8,7 +8,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace Rozklad.V2.Telegram.Commands
 {
-    public class EnableNotificationsCommand : Command
+    public class EnableNotificationsCommand : ICommand
     {
         private readonly IRozkladRepository _repository;
         private readonly JobsManager _jobsManager;
@@ -19,8 +19,8 @@ namespace Rozklad.V2.Telegram.Commands
             _jobsManager = jobsManager;
         }
         
-        public static string Name => @"enable";
-        public override async Task Execute(Message message, TelegramBotClient client)
+        public static string Name => @"/enable";
+        public  async Task Execute(Message message, TelegramBotClient client)
         {
             var student = await _repository.GetUserByTelegramId(message.From.Id);
             var notificationEntity = new NotificationsSettings
@@ -34,7 +34,7 @@ namespace Rozklad.V2.Telegram.Commands
             await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення вимкнено !");
         }
 
-        public override bool Contains(Message message)
+        public  bool Contains(Message message)
         {
             return message.Type == MessageType.Text 
                    && message.Text.Contains(Name);

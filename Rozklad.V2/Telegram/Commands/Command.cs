@@ -5,7 +5,7 @@ using Telegram.Bot.Types;
 
 namespace Rozklad.V2.Telegram.Commands
 {
-    public  abstract class Command
+    public  interface ICommand
     {
         public static string Name { get; }
 
