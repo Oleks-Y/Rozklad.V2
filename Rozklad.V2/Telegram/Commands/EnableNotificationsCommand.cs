@@ -31,7 +31,7 @@ namespace Rozklad.V2.Telegram.Commands
             await _repository.UpdateNotification(notificationEntity);
             await _repository.SaveAsync();
             await _jobsManager.RefreshJobs();
-            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення вимкнено !");
+            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення увімкнено !");
         }
 
         public  bool Contains(Message message)

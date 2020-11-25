@@ -25,7 +25,6 @@ namespace Rozklad.V2.Controllers
 
             var message = update.Message;
             var command = _commandFactory.GetCommand(message);
-            // todo it always return startCommand 
             if(command!=null)
                 await command.Execute(message, Bot.BotClient);
             await _repository.SaveAsync();
