@@ -50,7 +50,9 @@ namespace Rozklad.V2
             
             services.AddEntityFrameworkNpgsql();
             services .AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(Configuration.GetConnectionString("Connection")));
+            {
+                options.UseNpgsql(Configuration.GetConnectionString("Connection"));
+            });
             services.AddScoped<IUserSerice, UserSerivce>();
             services.AddControllersWithViews();
             var appSettings = appSettingsSection.Get<AppSettings>();
