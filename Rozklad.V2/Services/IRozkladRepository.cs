@@ -35,9 +35,15 @@ namespace Rozklad.V2.Services
 
         Task<IEnumerable<FireTime>> GetAllNotificationsFireTimes();
 
-        Task<IEnumerable<Notification>> GetAllNotificationsByThisTime(int lessonWeek, int dayOfWeek,
-            TimeSpan timeOfLesson);
+        IEnumerable<Notification> GetAllNotificationsByThisTime(FireTime fireTime);
 
+        Task AddUserTelegramChatInfoAsync(TelegramData data);
+        Task<bool> UserDataExistsAsync(long telegramId);
+        Task AddUserChatId(long telegramId,long chatId);
+        IEnumerable<TelegramData> GetUserTelegramData(IEnumerable<Guid> studentsIds);
+        bool UserTelegramDataExists(Guid studentId);
+        Task<Student> GetUserByTelegramId(long telegramId);
+        
         Task SaveAsync();
     }
 }

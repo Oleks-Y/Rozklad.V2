@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Rozklad.V2.DataAccess;
 using Rozklad.V2.Entities;
+using Rozklad.V2.Exceptions;
 using Rozklad.V2.Helpers;
 using Rozklad.V2.Models;
 
@@ -66,9 +68,34 @@ namespace Rozklad.V2.Services
         public async Task<IEnumerable<Lesson>> GetLessonsForStudent(Guid studentId)
         {
             var student = _context.Students.Include("Group").FirstOrDefault(s => s.Id == studentId);
+            
             var lessons = await _context.Lessons.Include("Subject")
                 .Where(l => l.Subject.GroupId == student.Group.Id).ToListAsync();
+            
             var disabledSubjects = _context.DisabledSubjects.Where(s => s.StudentId == student.Id);
+            
+            var lessonsCopy = new Lesson[lessons.Count];
+            lessons.CopyTo(lessonsCopy);
+            foreach (var lesson in lessonsCopy.Where(lesson =>
+                disabledSubjects.Select(s => s.SubjectId).Contains(lesson.SubjectId)))
+            {
+                lessons.Remove(lesson);
+            }
+
+            return lessons.OrderBy(l => l.Week)
+                .ThenBy(l => l.DayOfWeek)
+                .ThenBy(l => l.TimeStart)
+                .ToList();
+        } 
+        private IEnumerable<Lesson> GetLessonsForStudentSync(Guid studentId)
+        {
+            var student = _context.Students.Include("Group").FirstOrDefault(s => s.Id == studentId);
+            
+            var lessons = _context.Lessons.Include("Subject")
+                .Where(l => l.Subject.GroupId == student.Group.Id).ToList();
+            
+            var disabledSubjects = _context.DisabledSubjects.Where(s => s.StudentId == student.Id);
+            
             var lessonsCopy = new Lesson[lessons.Count];
             lessons.CopyTo(lessonsCopy);
             foreach (var lesson in lessonsCopy.Where(lesson =>
@@ -170,9 +197,10 @@ namespace Rozklad.V2.Services
             // select all unique notification times  
             var notificationsSettings = await _context.NotificationsSettings.ToListAsync();
             var fireTimes = new List<FireTime>();
-            foreach (var notificationsSetting in notificationsSettings)
+            foreach (var notificationsSetting in 
+                notificationsSettings.Where(notificationsSetting => notificationsSetting.IsNotificationsOn))
             {
-                var lessons = await this.GetLessonsForStudent(notificationsSetting.StudentId);
+                var lessons = await GetLessonsForStudent(notificationsSetting.StudentId);
                 foreach (var lesson in lessons)
                 {
                     var notificationTime = DateTime.Parse(lesson.TimeStart)
@@ -181,7 +209,7 @@ namespace Rozklad.V2.Services
                     {
                         Time = notificationTime,
                         NumberOfDay = lesson.DayOfWeek,
-                        NumberOfWeek = lesson.DayOfWeek,
+                        NumberOfWeek = lesson.Week,
                         LessonTime = TimeSpan.Parse(lesson.TimeStart)
                     };
                     // get notification time 
@@ -196,27 +224,84 @@ namespace Rozklad.V2.Services
         }
 
         // time of lesson in format "8:30:00"
-        public async Task<IEnumerable<Notification>> GetAllNotificationsByThisTime(int lessonWeek, int dayOfWeek,
-            TimeSpan timeOfLesson)
-        {
+        public IEnumerable<Notification> GetAllNotificationsByThisTime( FireTime fireTime){
             // get all notifications 
             // foreach student in notifications get all lessons  
             // if lesson is next lesson, return it 
-            var notificationsSettings = await _context.NotificationsSettings.ToListAsync();
+            var notificationsSettings = _context.NotificationsSettings.ToList();
             var notifications = new List<Notification>();
             foreach (var notificationsSetting in notificationsSettings)
             {
-                var lessons = await this.GetLessonsForStudent(notificationsSetting.StudentId);
+                if (!notificationsSetting.IsNotificationsOn)
+                {
+                    continue;
+                }
+                var lessons = this.GetLessonsForStudentSync(notificationsSetting.StudentId);
                 notifications.AddRange(from lesson in lessons
-                    where lesson.Week == lessonWeek && lesson.DayOfWeek == dayOfWeek &&
-                          lesson.TimeStart == timeOfLesson.ToString()
-                    select new Notification {Lesson = lesson, StudentId = notificationsSetting.StudentId});
+                    where lesson.Week == fireTime.NumberOfWeek && lesson.DayOfWeek == fireTime.NumberOfDay &&
+                          // check if time format is ok 
+                          lesson.TimeStart == fireTime.LessonTime.ToString()
+                    select new Notification
+                    {
+                        Lesson = lesson,
+                        StudentId = notificationsSetting.StudentId,
+                        Type = notificationsSetting.NotificationType
+                    });
             }
 
             return notifications;
         }
 
+        public async Task AddUserTelegramChatInfoAsync(TelegramData data)
+        {
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.Id == data.StudentId);
+            if (student == null)
+            {
+                throw new ArgumentException(nameof(TelegramData));
+            }
 
+            await _context.TelegramData.AddAsync(data);
+        }
+
+        public async Task<bool> UserDataExistsAsync(long telegramId)
+        {
+            var isExist = await _context.TelegramData.AnyAsync(d => d.TelegramId == telegramId);
+
+            return isExist;
+        }
+
+        public async Task AddUserChatId(long telegramId, long chatId)
+        {
+            var data = await _context.TelegramData.FirstOrDefaultAsync(s => s.TelegramId == telegramId);
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(telegramId));
+            }
+
+            if (data.TelegramChatId != null)
+            {
+                throw new TelegramChatIdExistsException();
+            }
+
+            data.TelegramChatId = chatId;
+        }
+
+        public IEnumerable<TelegramData> GetUserTelegramData(IEnumerable<Guid> studentsIds)
+        {
+            var telegramDatas =  _context.TelegramData.Where(s => studentsIds.Contains(s.StudentId)).ToList();
+            return telegramDatas;
+        }
+
+        public bool UserTelegramDataExists(Guid studentId)
+        {
+            return _context.TelegramData.Any(s => s.StudentId == studentId);
+        }
+
+        public Task<Student> GetUserByTelegramId(long telegramId)
+        {
+            return _context.Students.FirstOrDefaultAsync(s => s.Telegram_Id == telegramId);
+        }
+        
         public async Task SaveAsync()
         {
             await _context.SaveChangesAsync();
