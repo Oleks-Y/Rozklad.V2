@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Rozklad.V2.DataAccess;
 using Rozklad.V2.Entities;
@@ -95,6 +96,8 @@ namespace Rozklad.V2.Services
             using var hmac = new System.Security.Cryptography.HMACSHA512(storedSalt);
             var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
             return !computedHash.Where((t, i) => t != storedHash[i]).Any();
-        }
+        } 
+        
+        
     }
 }

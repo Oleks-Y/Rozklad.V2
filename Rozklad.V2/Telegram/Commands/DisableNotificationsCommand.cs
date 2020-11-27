@@ -22,6 +22,7 @@ namespace Rozklad.V2.Telegram.Commands
         public static string Name => @"/disable";
         public  async Task Execute(Message message, TelegramBotClient client)
         {
+            // todo перевірка наяності свовіщень 
             Console.WriteLine("We are here !");
             var student = await _repository.GetUserByTelegramId(message.From.Id);
             var notificationEntity = new NotificationsSettings

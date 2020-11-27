@@ -22,7 +22,13 @@ namespace Rozklad.V2.Telegram.Commands
         public static string Name => @"/enable";
         public  async Task Execute(Message message, TelegramBotClient client)
         {
+            // todo перевірка наявності сповіщень 
             var student = await _repository.GetUserByTelegramId(message.From.Id);
+            if (student == null)
+            {
+                // todo Bot : винести текст команд в статичний класс 
+                await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Щоб користуватись сповіщеннями, їх потрібно увімкнути на сайті <domain> ");
+            }
             var notificationEntity = new NotificationsSettings
             {
                 StudentId = student.Id,
