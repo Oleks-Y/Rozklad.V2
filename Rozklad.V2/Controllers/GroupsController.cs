@@ -15,6 +15,7 @@ namespace Rozklad.V2.Controllers
     [Route("api/groups")]
     public class GroupsController : ControllerBase
     {
+        //todo everywhere, where uses studentId with auth need to validate token with studentId 
 
         private readonly IRozkladRepository _rozkladRepository;
 
