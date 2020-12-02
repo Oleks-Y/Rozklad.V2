@@ -8,6 +8,7 @@ using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
@@ -138,6 +139,10 @@ namespace Rozklad.V2
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,JobsManager jobsManager)
         {
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -176,15 +181,15 @@ namespace Rozklad.V2
                     
                 });
             app.UseHangfireDashboard();
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "ClientApp";
-
-                if (env.IsDevelopment())
-                {
-                    spa.UseReactDevelopmentServer(npmScript: "start");
-                }
-            });
+            // app.UseSpa(spa =>
+            // {
+            //     spa.Options.SourcePath = "ClientApp";
+            //
+            //     if (env.IsDevelopment())
+            //     {
+            //         spa.UseReactDevelopmentServer(npmScript: "start");
+            //     }
+            // });
             
             jobsManager.RefreshJobs().GetAwaiter().GetResult();
         }

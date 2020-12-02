@@ -36,7 +36,9 @@ namespace Rozklad.V2.Services
         public AuthenticateResponse AuthenticateWithTelegram(AuthenticateRequestTelegram model, string ipAddress)
         {
             // Check if student exists by id
-            var student = _context.Students.Include("Group")
+            var student = _context.Students
+                .Include("Group")
+                .Include("RefreshTokens")
                 .SingleOrDefault(s => s.Telegram_Id == model.TelegramUser.id);
             if (student == null)
             {
@@ -80,7 +82,7 @@ namespace Rozklad.V2.Services
         //todo registration method 
         public AuthenticateResponse RefreshToken(string token, string ipAddress)
         {
-            var student = _context.Students.SingleOrDefault(s => s.RefreshTokens.Any(t => t.Token == token));
+            var student = _context.Students.Include("RefreshTokens").SingleOrDefault(s => s.RefreshTokens.Any(t => t.Token == token));
 
             if (student == null) return null;
 

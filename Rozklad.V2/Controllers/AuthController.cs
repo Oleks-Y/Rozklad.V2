@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -25,6 +26,23 @@ namespace Rozklad.V2.Controllers
             _repository = repository;
         }
 
+        [AllowAnonymous]
+        [HttpGet("group")]
+        public async Task<IActionResult> GetStudentGroup([FromBody] TelegramUser model)
+        {
+            // get student by telegram id 
+            // get group 
+            // if group not exists - 404
+            var student = await _repository.GetUserByTelegramId((long)model.id);
+            if (student == null)
+            {
+                return NotFound();
+            }
+            return Ok(new GroupDto
+            {
+                GroupName = student.Group.Group_Name
+            });
+        }
         [AllowAnonymous]
         [HttpPost("telegram")]
         public IActionResult AuthWithTelegram([FromBody] TelegramAuthModel model)
