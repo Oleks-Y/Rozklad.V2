@@ -23,10 +23,8 @@ namespace Rozklad.V2.Controllers
         {
             if (update == null) return Ok();
 
-            var commands = Bot.Commands;
             var message = update.Message;
             var command = _commandFactory.GetCommand(message);
-            // todo it not work, rewrite it with interface
             if(command!=null)
                 await command.Execute(message, Bot.BotClient);
             await _repository.SaveAsync();

@@ -8,6 +8,7 @@ using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
@@ -50,9 +51,13 @@ namespace Rozklad.V2
             
             services.AddEntityFrameworkNpgsql();
             services .AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(Configuration.GetConnectionString("Connection")));
+            {
+                options.UseNpgsql(Configuration.GetConnectionString("Connection"));
+            });
+            services.AddScoped<IUserSerice, UserSerivce>();
             services.AddControllersWithViews();
             var appSettings = appSettingsSection.Get<AppSettings>();
+            services.AddSingleton<AppSettings>(_ => appSettings);
             var key = Encoding.ASCII.GetBytes(appSettings.Secret);
             services.AddAuthentication(x =>
                 {
@@ -65,7 +70,7 @@ namespace Rozklad.V2
                     {
                         OnTokenValidated = context =>
                         {
-                            var userService = context.HttpContext.RequestServices.GetRequiredService<IStudentService>();
+                            var userService = context.HttpContext.RequestServices.GetRequiredService<IUserSerice>();
                             var userId = Guid.Parse(context.Principal.Identity.Name ?? string.Empty);
                             var user = userService.GetById(userId);
                             if (user == null)
@@ -87,7 +92,7 @@ namespace Rozklad.V2
                     };
                 });
             services.AddControllersWithViews().AddNewtonsoftJson();
-            services.AddScoped<IStudentService, StudentService>();
+            // services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IRozkladRepository, RozkladRepository>();
             services.AddSingleton<TelegramValidationService>(s=>new TelegramValidationService(appSettings.BotToken));
             // In production, the React files will be served from this directory
@@ -123,9 +128,9 @@ namespace Rozklad.V2
            services.AddScoped<NotificationJob>();
            services.AddScoped<ITelegramNotificationService, TelegramNotificationService>();
             // Telegram Bot start 
-            services.AddScoped<Command, StartCommand>();
-            services.AddScoped<Command, DisableNotificationsCommand>();
-            services.AddScoped<Command, EnableNotificationsCommand>();
+            services.AddScoped<StartCommand>();
+            services.AddScoped<DisableNotificationsCommand>();
+            services.AddScoped<EnableNotificationsCommand>();
             services.AddScoped<ICommandFactory, CommandFactory>();
             Bot.GetBotClientAsync(appSettings).Wait();
 
@@ -134,6 +139,10 @@ namespace Rozklad.V2
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,JobsManager jobsManager)
         {
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -172,15 +181,15 @@ namespace Rozklad.V2
                     
                 });
             app.UseHangfireDashboard();
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "ClientApp";
-
-                if (env.IsDevelopment())
-                {
-                    spa.UseReactDevelopmentServer(npmScript: "start");
-                }
-            });
+            // app.UseSpa(spa =>
+            // {
+            //     spa.Options.SourcePath = "ClientApp";
+            //
+            //     if (env.IsDevelopment())
+            //     {
+            //         spa.UseReactDevelopmentServer(npmScript: "start");
+            //     }
+            // });
             
             jobsManager.RefreshJobs().GetAwaiter().GetResult();
         }

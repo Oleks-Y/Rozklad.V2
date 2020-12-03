@@ -299,7 +299,7 @@ namespace Rozklad.V2.Services
 
         public Task<Student> GetUserByTelegramId(long telegramId)
         {
-            return _context.Students.FirstOrDefaultAsync(s => s.Telegram_Id == telegramId);
+            return _context.Students.Include("Group").FirstOrDefaultAsync(s => s.Telegram_Id == telegramId);
         }
         
         public async Task SaveAsync()

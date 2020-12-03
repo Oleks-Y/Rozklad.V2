@@ -8,7 +8,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace Rozklad.V2.Telegram.Commands
 {
-    public class EnableNotificationsCommand : Command
+    public class EnableNotificationsCommand : ICommand
     {
         private readonly IRozkladRepository _repository;
         private readonly JobsManager _jobsManager;
@@ -19,10 +19,16 @@ namespace Rozklad.V2.Telegram.Commands
             _jobsManager = jobsManager;
         }
         
-        public static string Name => @"enable";
-        public override async Task Execute(Message message, TelegramBotClient client)
+        public static string Name => @"/enable";
+        public  async Task Execute(Message message, TelegramBotClient client)
         {
+            //  перевірка наявності сповіщень 
             var student = await _repository.GetUserByTelegramId(message.From.Id);
+            if (student == null)
+            {
+                // todo Bot : винести текст команд в статичний класс 
+                await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Щоб користуватись сповіщеннями, їх потрібно увімкнути на сайті <domain> ");
+            }
             var notificationEntity = new NotificationsSettings
             {
                 StudentId = student.Id,
@@ -31,10 +37,10 @@ namespace Rozklad.V2.Telegram.Commands
             await _repository.UpdateNotification(notificationEntity);
             await _repository.SaveAsync();
             await _jobsManager.RefreshJobs();
-            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення вимкнено !");
+            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення увімкнено !");
         }
 
-        public override bool Contains(Message message)
+        public  bool Contains(Message message)
         {
             return message.Type == MessageType.Text 
                    && message.Text.Contains(Name);

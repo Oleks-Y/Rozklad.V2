@@ -1,0 +1,23 @@
+﻿version: '3.8'
+
+services:
+  apiservice: 
+    image: ${DOCKER_REGISTRY}apiservice
+    build:
+      context: ./Rozklad.V2
+      dockerfile: Dockerfile
+    ports: 
+      - 5000:80 
+  proxy: 
+    image: nginx:latest
+    volumes:
+#      - type: volume
+#        source: ./nginx.info
+#        target: /etc/nginx/nginx.conf
+#        volume:
+#          nocopy: false
+      - ./nginx.info:/etc/nginx/nginx.conf:ro
+    ports:
+    - 80:80
+#volumes:
+#  nginx.info:

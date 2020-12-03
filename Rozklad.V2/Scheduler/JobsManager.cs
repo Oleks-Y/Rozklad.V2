@@ -33,7 +33,6 @@ namespace Rozklad.V2.Scheduler
                 // Todo test notifications with multiple users 
                 // можливо, що розсилка буде надто повільна 
                 // todo усю логіку варто жорстко переглянути на діри 
-                // todo тествувати з великою кількістю користувачів 
                 GlobalJobFilters.Filters.Remove(defaultRetryFilter.Instance);
             }
             GlobalJobFilters.Filters.Add(new AutomaticRetryAttribute{ Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete});
@@ -48,7 +47,6 @@ namespace Rozklad.V2.Scheduler
                     () => _notificationJob.Execute(jobSchedule.FireTime),
                     jobSchedule.Cron);
             }
-            // todo: визначити, що відбувається, коли у студента обрані кілька предметів на даний час 
             this._jobSchedules = jobSchedules.ToArray();
         }
 

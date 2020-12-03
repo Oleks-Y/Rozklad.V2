@@ -47,7 +47,7 @@ namespace Rozkald.V2.Tests
             {
                 var Guids = new List<Guid>{ studentId1, studentId2};
                 var repository = new RozkladRepository(context);
-                result = (await repository.GetUserTelegramData(Guids)).ToList();
+                result = (repository.GetUserTelegramData(Guids)).ToList();
             }
             // Assert 
             Assert.True(result.Count>0);
@@ -146,7 +146,7 @@ namespace Rozkald.V2.Tests
                     NumberOfDay = 1,
                     NumberOfWeek = 2
                 };
-                result1 = (await repository.GetAllNotificationsByThisTime(fireTime1)).ToList();
+                result1 = (repository.GetAllNotificationsByThisTime(fireTime1)).ToList();
             }
             
             //Assert 
