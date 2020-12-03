@@ -52,7 +52,7 @@ namespace Rozklad.V2.Scheduler
 
         public async Task RefreshJobs()
         {
-            // delete all old schedules 
+            // delete all old schedules // 
             // todo можливо, варто не видаляти усі роботи
             using (var connection = JobStorage.Current.GetConnection()) 
             {
