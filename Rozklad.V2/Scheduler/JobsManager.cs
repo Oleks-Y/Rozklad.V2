@@ -49,13 +49,14 @@ namespace Rozklad.V2.Scheduler
             }
             this._jobSchedules = jobSchedules.ToArray();
         }
-
+        // todo run job in parallel thread 
+        // todo check if it slow database connection s
         public async Task RefreshJobs()
         {
             // delete all old schedules 
             // todo можливо, варто не видаляти усі роботи
             using (var connection = JobStorage.Current.GetConnection()) 
-            {
+            {    // todo this is very funckign slow 
                 foreach (var recurringJob in StorageConnectionExtensions.GetRecurringJobs(connection)) 
                 {
                     RecurringJob.RemoveIfExists(recurringJob.Id);
@@ -63,7 +64,9 @@ namespace Rozklad.V2.Scheduler
             }
             // Problem : every time ,when sending request for notificationController,
             // all schedules delete and new will be write, but we have only replace jobs  
+            // todo this a little slow 
             var jobSchedules = await _schedulerService.GetJobSchedules();
+            // todo this is veeru slow 
             foreach (var jobSchedule in jobSchedules)
             {
                 _recurringJobManager.AddOrUpdate(jobSchedule.Cron,

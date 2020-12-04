@@ -72,7 +72,7 @@ namespace Rozklad.V2.Services
             var lessons = await _context.Lessons.Include("Subject")
                 .Where(l => l.Subject.GroupId == student.Group.Id).ToListAsync();
             
-            var disabledSubjects = _context.DisabledSubjects.Where(s => s.StudentId == student.Id);
+            var disabledSubjects = await _context.DisabledSubjects.Where(s => s.StudentId == student.Id).ToListAsync();
             
             var lessonsCopy = new Lesson[lessons.Count];
             lessons.CopyTo(lessonsCopy);
