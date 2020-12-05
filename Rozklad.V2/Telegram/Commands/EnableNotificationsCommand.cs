@@ -11,9 +11,9 @@ namespace Rozklad.V2.Telegram.Commands
     public class EnableNotificationsCommand : ICommand
     {
         private readonly IRozkladRepository _repository;
-        private readonly JobsManager _jobsManager;
+        private readonly IJobManager _jobsManager;
 
-        public EnableNotificationsCommand(IRozkladRepository repository, JobsManager jobsManager)
+        public EnableNotificationsCommand(IRozkladRepository repository, IJobManager jobsManager)
         {
             _repository = repository;
             _jobsManager = jobsManager;
@@ -22,22 +22,22 @@ namespace Rozklad.V2.Telegram.Commands
         public static string Name => @"/enable";
         public  async Task Execute(Message message, TelegramBotClient client)
         {
-            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення увімкнено !");
-            //  перевірка наявності сповіщень 
-            var student = await _repository.GetUserByTelegramId(message.From.Id);
-            if (student == null)
-            {
-                // todo Bot : винести текст команд в статичний класс 
-                await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Щоб користуватись сповіщеннями, їх потрібно увімкнути на сайті <domain> ");
-            }
-            var notificationEntity = new NotificationsSettings
-            {
-                StudentId = student.Id,
-                IsNotificationsOn = true
-            };
-            await _repository.UpdateNotification(notificationEntity);
-            await _repository.SaveAsync();
-            await _jobsManager.RefreshJobs();
+            // await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення увімкнено !");
+            // //  перевірка наявності сповіщень 
+            // var student = await _repository.GetUserByTelegramId(message.From.Id);
+            // if (student == null)
+            // {
+            //     // todo Bot : винести текст команд в статичний класс 
+            //     await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Щоб користуватись сповіщеннями, їх потрібно увімкнути на сайті <domain> ");
+            // }
+            // var notificationEntity = new NotificationsSettings
+            // {
+            //     StudentId = student.Id,
+            //     IsNotificationsOn = true
+            // };
+            // await _repository.UpdateNotification(notificationEntity);
+            // await _repository.SaveAsync();
+            // await _jobsManager.RefreshJobs();
         }
 
         public  bool Contains(Message message)

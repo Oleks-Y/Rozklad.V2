@@ -12,9 +12,9 @@ namespace Rozklad.V2.Telegram.Commands
     public class DisableNotificationsCommand : ICommand
     {
         private readonly IRozkladRepository _repository;
-        private readonly JobsManager _jobsManager;
+        private readonly IJobManager _jobsManager;
 
-        public DisableNotificationsCommand(IRozkladRepository repository, JobsManager jobsManager)
+        public DisableNotificationsCommand(IRozkladRepository repository, IJobManager jobsManager)
         {
             _repository = repository;
             _jobsManager = jobsManager;
@@ -22,18 +22,17 @@ namespace Rozklad.V2.Telegram.Commands
         public static string Name => @"/disable";
         public  async Task Execute(Message message, TelegramBotClient client)
         {
-            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення вимкнено !");
-            // todo перевірка наяності свовіщень 
-            Console.WriteLine("We are here !");
-            var student = await _repository.GetUserByTelegramId(message.From.Id);
-            var notificationEntity = new NotificationsSettings
-            {
-                StudentId = student.Id,
-                IsNotificationsOn = false
-            };
-            await _repository.UpdateNotification(notificationEntity);
-            await _repository.SaveAsync();
-            await _jobsManager.RefreshJobs();
+            // await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення вимкнено !");
+            // // todo перевірка наяності свовіщень 
+            // Console.WriteLine("We are here !");
+            // var student = await _repository.GetUserByTelegramId(message.From.Id);
+            // var notificationEntity = new NotificationsSettings
+            // {
+            //     StudentId = student.Id,
+            //     IsNotificationsOn = false
+            // };
+            // await _repository.UpdateNotification(notificationEntity);
+            // await _repository.SaveAsync();
         }
 
         public  bool Contains(Message message)

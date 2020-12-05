@@ -11,7 +11,7 @@ namespace Rozklad.V2.Services
         /// Method, that set notificationsFor student on 
         /// </summary>
         /// <param name="stuedntId"></param>
-        /// <returns>List of firetimes, that need to add </returns>
+        /// <returns></returns>
         Task<IEnumerable<FireTime>> EnableNotifications(Guid stuedntId);
         /// <summary>
         /// Method, that set notifications for student off

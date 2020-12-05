@@ -94,6 +94,7 @@ namespace Rozklad.V2
             services.AddControllersWithViews().AddNewtonsoftJson();
             // services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IRozkladRepository, RozkladRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddSingleton<TelegramValidationService>(s=>new TelegramValidationService(appSettings.BotToken));
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
@@ -122,8 +123,8 @@ namespace Rozklad.V2
            
            // Add framework services.
            services.AddMvc();
-           services.AddScoped<IJobManager>();
-   b         services.AddScoped<ISchedulerService, SchedulerService>();
+           services.AddScoped<IJobManager>(); 
+           services.AddScoped<ISchedulerService, SchedulerService>();
            services.AddScoped<INotificationJob, NotificationJob>();
            services.AddScoped<NotificationJob>();
            services.AddScoped<ITelegramNotificationService, TelegramNotificationService>();
