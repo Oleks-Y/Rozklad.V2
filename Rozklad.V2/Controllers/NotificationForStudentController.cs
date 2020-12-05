@@ -18,6 +18,7 @@ namespace Rozklad.V2.Controllers
         // Controller, where notifications can be on / off 
         private readonly IRozkladRepository _repository;
         private IMapper _mapper;
+        // todo rewrite this 
         private readonly JobsManager _jobsManager;
         public NotificationForStudentController(IRozkladRepository repository, IMapper mapper, JobsManager jobsManager)
         {
