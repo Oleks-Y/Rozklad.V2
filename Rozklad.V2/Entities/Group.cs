@@ -12,7 +12,7 @@ namespace Rozklad.V2.Entities
 
         public string Group_Name { get; set; }
         
-        
+        [ForeignKey("Subjects")]
         public IEnumerable<Subject> Subjects { get; set; }
     }
 }

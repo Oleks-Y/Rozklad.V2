@@ -122,8 +122,8 @@ namespace Rozklad.V2
            
            // Add framework services.
            services.AddMvc();
-           services.AddScoped<JobsManager>();
-           services.AddScoped<ISchedulerService, SchedulerService>();
+           services.AddScoped<IJobManager>();
+   b         services.AddScoped<ISchedulerService, SchedulerService>();
            services.AddScoped<INotificationJob, NotificationJob>();
            services.AddScoped<NotificationJob>();
            services.AddScoped<ITelegramNotificationService, TelegramNotificationService>();
@@ -137,7 +137,7 @@ namespace Rozklad.V2
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,JobsManager jobsManager)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
@@ -191,7 +191,7 @@ namespace Rozklad.V2
             //     }
             // });
             
-            jobsManager.RefreshJobs().GetAwaiter().GetResult();
+            // jobsManager.RefreshJobs().GetAwaiter().GetResult();
         }
     }
 }

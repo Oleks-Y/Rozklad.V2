@@ -22,6 +22,7 @@ namespace Rozklad.V2.Telegram.Commands
         public static string Name => @"/enable";
         public  async Task Execute(Message message, TelegramBotClient client)
         {
+            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення увімкнено !");
             //  перевірка наявності сповіщень 
             var student = await _repository.GetUserByTelegramId(message.From.Id);
             if (student == null)
@@ -37,7 +38,6 @@ namespace Rozklad.V2.Telegram.Commands
             await _repository.UpdateNotification(notificationEntity);
             await _repository.SaveAsync();
             await _jobsManager.RefreshJobs();
-            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення увімкнено !");
         }
 
         public  bool Contains(Message message)

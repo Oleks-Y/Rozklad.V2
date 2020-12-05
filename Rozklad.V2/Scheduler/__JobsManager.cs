@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper.Internal;
 using Hangfire;
 using Hangfire.Storage;
 using Rozklad.V2.Services;
 
 namespace Rozklad.V2.Scheduler
 {
-    public class JobsManager
+    public class __JobsManager
     {
         private readonly IRecurringJobManager _recurringJobManager;
         private readonly INotificationJob _notificationJob;
@@ -17,7 +18,7 @@ namespace Rozklad.V2.Scheduler
 
         private IEnumerable<JobSchedule> _jobSchedules;
 
-        public JobsManager(IRecurringJobManager recurringJobManager, NotificationJob notificationJob,
+        public __JobsManager(IRecurringJobManager recurringJobManager, NotificationJob notificationJob,
             ISchedulerService schedulerService)
         {
             _recurringJobManager = recurringJobManager;
@@ -55,26 +56,24 @@ namespace Rozklad.V2.Scheduler
         {
             // delete all old schedules 
             // todo можливо, варто не видаляти усі роботи
-            using (var connection = JobStorage.Current.GetConnection()) 
-            {    // todo this is very funckign slow 
-                foreach (var recurringJob in StorageConnectionExtensions.GetRecurringJobs(connection)) 
-                {
-                    RecurringJob.RemoveIfExists(recurringJob.Id);
-                }
-            }
+            var connection = JobStorage.Current.GetConnection();
+            var deletingTask = Task.Run(() => connection.GetRecurringJobs().ForAll(
+                    reccuringJob =>
+                    {
+                        _recurringJobManager.RemoveIfExists(reccuringJob.Id);
+                    }));
             // Problem : every time ,when sending request for notificationController,
             // all schedules delete and new will be write, but we have only replace jobs  
             // todo this a little slow 
             var jobSchedules = await _schedulerService.GetJobSchedules();
             // todo this is veeru slow 
-            foreach (var jobSchedule in jobSchedules)
-            {
-                _recurringJobManager.AddOrUpdate(jobSchedule.Cron,
-                    () =>  _notificationJob.Execute(jobSchedule.FireTime),
-                    jobSchedule.Cron);
-            }
-
+            var addingTask = Task.Run(() => jobSchedules.ForAll((jobSchedule) => _recurringJobManager.AddOrUpdate(
+                jobSchedule.Cron,
+                () => _notificationJob.Execute(jobSchedule.FireTime),
+                jobSchedule.Cron))
+            );
             _jobSchedules = jobSchedules;
+            await Task.WhenAll(deletingTask, addingTask);
         }
     }
 }

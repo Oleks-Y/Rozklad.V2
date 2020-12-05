@@ -30,10 +30,11 @@ namespace Rozklad.V2.Services
         Task<IEnumerable<Group>> GetAllGroupsAsync();
 
         bool StudentExists(Guid studentId);
+        
 
-        Task<IEnumerable<NotificationsSettings>> GetAllNotificationsSettings();
+        // Task<IEnumerable<FireTime>> GetAllNotificationsFireTimes();
 
-        Task<IEnumerable<FireTime>> GetAllNotificationsFireTimes();
+        Task<IEnumerable<FireTime>> GetFireTimesForStudent(Guid studentId);
 
         IEnumerable<Notification> GetAllNotificationsByThisTime(FireTime fireTime);
 

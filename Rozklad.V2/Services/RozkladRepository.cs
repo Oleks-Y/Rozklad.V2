@@ -189,6 +189,31 @@ namespace Rozklad.V2.Services
             return await _context.NotificationsSettings.ToListAsync();
         }
 
+        public async Task<IEnumerable<FireTime>> GetFireTimesForStudent(Guid studentId)
+        {
+            var notificationsSettings =
+                await _context.NotificationsSettings.FirstOrDefaultAsync(s => s.StudentId == studentId);
+            var firetimes = new List<FireTime>();
+            var lessons = await GetLessonsForStudent(notificationsSettings.StudentId);
+            foreach (var lesson in lessons)
+            {
+                var notificationTime = DateTime.Parse(lesson.TimeStart)
+                    .AddMinutes(-notificationsSettings.TimeBeforeLesson).TimeOfDay;
+                var firetime = new FireTime
+                {
+                    Time = notificationTime,
+                    NumberOfDay = lesson.DayOfWeek,
+                    NumberOfWeek = lesson.Week,
+                    LessonTime = TimeSpan.Parse(lesson.TimeStart)
+                };
+                if (!firetimes.Contains(firetime))
+                {
+                    firetimes.Add(firetime);
+                }
+            }
+            return firetimes;
+        }
+
         public async Task<IEnumerable<FireTime>> GetAllNotificationsFireTimes()
         {
             // get all notifications 

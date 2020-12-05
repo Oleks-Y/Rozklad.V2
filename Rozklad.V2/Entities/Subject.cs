@@ -26,5 +26,8 @@ namespace Rozklad.V2.Entities
         
         public string LabsAccessCode { get; set; }
 
+        [ForeignKey("Lessons")]
+        public IEnumerable<Lesson> Lessons { get; set; }
+
     }
 }
