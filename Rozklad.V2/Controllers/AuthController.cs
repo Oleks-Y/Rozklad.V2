@@ -43,6 +43,7 @@ namespace Rozklad.V2.Controllers
                 GroupName = student.Group.Group_Name
             });
         }
+        // todo some users in telegram don`t have username 
         [AllowAnonymous]
         [HttpPost("telegram")]
         public IActionResult AuthWithTelegram([FromBody] TelegramAuthModel model)

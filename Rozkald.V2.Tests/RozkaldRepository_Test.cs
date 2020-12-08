@@ -73,14 +73,14 @@ namespace Rozkald.V2.Tests
                     Id = Guid.Parse("fb484eee-dea4-409b-b6df-778cfd82d6a1"),
                     GroupId = Guid.Parse("3bb26431-a7ba-4b55-970a-c8544cb920c8"),
                 });
-                context.NotificationsSettings.Add(new NotificationsSettings
-                {
-                    Id = Guid.Parse("3c1ea52f-3610-4ddc-a8b7-9b87e167eeff"),
-                    NotificationType = "Telegram",
-                    StudentId = Guid.Parse("fb484eee-dea4-409b-b6df-778cfd82d6a1"),
-                    IsNotificationsOn = true,
-                    TimeBeforeLesson = 15
-                });
+                // context.NotificationsSettings.Add(new NotificationsSettings
+                // {
+                //     Id = Guid.Parse("3c1ea52f-3610-4ddc-a8b7-9b87e167eeff"),
+                //     NotificationType = "Telegram",
+                //     StudentId = Guid.Parse("fb484eee-dea4-409b-b6df-778cfd82d6a1"),
+                //     IsNotificationsOn = true,
+                //     TimeBeforeLesson = 15
+                // });
                 context.Subjects.Add(new Subject
                 {
                     Id = Guid.Parse("e4d55a2a-cb04-4a0d-a355-d99130ff5986"),

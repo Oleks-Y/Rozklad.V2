@@ -14,75 +14,60 @@ namespace Rozklad.V2.Services
     {
         private readonly ApplicationDbContext _context;
 
-        private readonly IJobManager _jobManager;
 
-        public NotificationRepository(ApplicationDbContext context, IJobManager jobManager)
+        public NotificationRepository(ApplicationDbContext context)
         {
             _context = context;
-            _jobManager = jobManager;
         }
 
-        public async Task<IEnumerable<FireTime>> EnableNotifications(Guid stuedntId)
+        public async Task EnableNotifications(Guid stuedntId)
         {
             await setNotifications(stuedntId, true);
-            var firetimesAll = getAllFiretimes();
-            var firetimesSpecificForStudent = getAllFireTimesForStudent(stuedntId);
-            var firetimesToAdd = firetimesSpecificForStudent.Except(firetimesAll);
-
-             return await firetimesToAdd.ToListAsync();
         }
 
-        public async Task<IEnumerable<FireTime>> DisableNotifications(Guid stuedntId)
+        public async Task DisableNotifications(Guid stuedntId)
         {
             await setNotifications(stuedntId, false);
-            var firetimesAll = getAllFiretimes();
-            var firetimesSpecificForStudent = getAllFireTimesForStudent(stuedntId);
-            var firetimesToRemove = firetimesSpecificForStudent.Except(firetimesAll);
-
-            return await firetimesToRemove.ToListAsync();
         }
 
         private async Task setNotifications(Guid studentId, bool isOn)
         {
-            var notificationsSettings =
-                await _context.NotificationsSettings.FirstOrDefaultAsync(s => s.StudentId == studentId);
-            notificationsSettings.IsNotificationsOn = isOn;
+            var student =
+                await _context.Students.Include("NotificationsSettings").FirstOrDefaultAsync(s => s.Id == studentId);
+            student.NotificationsSettings.IsNotificationsOn = isOn;
         }
 
-        private IQueryable<FireTime> getAllFiretimes()
+        private async Task<IEnumerable<FireTime>> getAllFiretimes()
         {
             var students = _context.Students.Include("NotificationsSettings").Include("DisabledSubjects");
             var studentsWithNotificationsOn = students.Where(s => s.NotificationsSettings.IsNotificationsOn == true);
             // all unique lessons 
-            var firetimes = getFiretimesFromStudents(studentsWithNotificationsOn);
+            var firetimes = await getFiretimesFromStudents(studentsWithNotificationsOn);
             return firetimes;
         }
 
-        private IQueryable<FireTime> getAllFireTimesForStudent(Guid studentId)
+        private async Task<IEnumerable<FireTime>> getAllFireTimesForStudent(Guid studentId)
         {
             // Actucally, it always will be array of single element, 
             // but now, i don`t know another way to run it in single query 
             var students = _context.Students.Include("NotificationsSettings")
                 .Include("DisabledSubjects").Where(s=>s.Id==studentId);
-            if (students.Any(s => !s.NotificationsSettings.IsNotificationsOn))
-            {
-                return null;
-            }
+            // todo check if notifications is on 
 
-            var fireTimes = getFiretimesFromStudents(students);
+            var fireTimes = await getFiretimesFromStudents(students);
 
             return fireTimes;
         }
 
-        private IQueryable<FireTime> getFiretimesFromStudents(IQueryable<Student> studentsWithNotificationsOn)
+        private async Task<IEnumerable<FireTime>> getFiretimesFromStudents(IQueryable<Student> studentsWithNotificationsOn)
         {
-            var lessons =
+            var lessons = await 
                 studentsWithNotificationsOn
                     .SelectMany(s =>
                         s.Group.Subjects.Where(subj =>
                                 !s.DisabledSubjects.Select(i => i.SubjectId).Contains(subj.Id))
                             .SelectMany(subj => subj.Lessons.Select(less => new {lesson = less, student = s})))
-                    .Distinct();
+                    .ToListAsync();
             var firetimes = lessons.Select(obj =>
                 new FireTime
                 {

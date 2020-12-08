@@ -12,12 +12,12 @@ namespace Rozklad.V2.Services
         /// </summary>
         /// <param name="stuedntId"></param>
         /// <returns></returns>
-        Task<IEnumerable<FireTime>> EnableNotifications(Guid stuedntId);
+        Task EnableNotifications(Guid stuedntId);
         /// <summary>
         /// Method, that set notifications for student off
         /// </summary>
         /// <param name="stuedntId"></param>
         /// <returns>List of firetimes, that need to remove</returns>
-        Task<IEnumerable<FireTime>> DisableNotifications(Guid stuedntId);
+        Task DisableNotifications(Guid stuedntId);
     }
 }

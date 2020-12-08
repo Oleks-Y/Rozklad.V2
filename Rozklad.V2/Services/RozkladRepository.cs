@@ -60,7 +60,7 @@ namespace Rozklad.V2.Services
                 await _context.NotificationsSettings.AddAsync(notificationsInfo);
                 return;
             }
-
+        
             notificationsInfoFromDb.IsNotificationsOn = notificationsInfo.IsNotificationsOn;
             notificationsInfoFromDb.TimeBeforeLesson = notificationsInfo.TimeBeforeLesson;
         }
@@ -95,7 +95,7 @@ namespace Rozklad.V2.Services
                 .Where(l => l.Subject.GroupId == student.Group.Id).ToList();
             
             var disabledSubjects = _context.DisabledSubjects.Where(s => s.StudentId == student.Id);
-            
+           // todo rewrite it  
             var lessonsCopy = new Lesson[lessons.Count];
             lessons.CopyTo(lessonsCopy);
             foreach (var lesson in lessonsCopy.Where(lesson =>
@@ -184,15 +184,15 @@ namespace Rozklad.V2.Services
             return _context.Students.Any(s => s.Id == studentId);
         }
 
-        public async Task<IEnumerable<NotificationsSettings>> GetAllNotificationsSettings()
-        {
-            return await _context.NotificationsSettings.ToListAsync();
-        }
+        // public async Task<IEnumerable<NotificationsSettings>> GetAllNotificationsSettings()
+        // {
+        //     return await _context.NotificationsSettings.ToListAsync();
+        // }
 
         public async Task<IEnumerable<FireTime>> GetFireTimesForStudent(Guid studentId)
         {
             var notificationsSettings =
-                await _context.NotificationsSettings.FirstOrDefaultAsync(s => s.StudentId == studentId);
+                (await _context.Students.FirstOrDefaultAsync(s => s.Id == studentId)).NotificationsSettings;
             var firetimes = new List<FireTime>();
             var lessons = await GetLessonsForStudent(notificationsSettings.StudentId);
             foreach (var lesson in lessons)
@@ -214,53 +214,51 @@ namespace Rozklad.V2.Services
             return firetimes;
         }
 
-        public async Task<IEnumerable<FireTime>> GetAllNotificationsFireTimes()
-        {
-            // get all notifications 
-            // foreach student in notifications get all lessons 
-            // for timetable calculate notificationsTime 
-            // select all unique notification times  
-            var notificationsSettings = await _context.NotificationsSettings.ToListAsync();
-            var fireTimes = new List<FireTime>();
-            foreach (var notificationsSetting in 
-                notificationsSettings.Where(notificationsSetting => notificationsSetting.IsNotificationsOn))
-            {
-                var lessons = await GetLessonsForStudent(notificationsSetting.StudentId);
-                foreach (var lesson in lessons)
-                {
-                    var notificationTime = DateTime.Parse(lesson.TimeStart)
-                        .AddMinutes(-notificationsSetting.TimeBeforeLesson).TimeOfDay;
-                    var firetime = new FireTime
-                    {
-                        Time = notificationTime,
-                        NumberOfDay = lesson.DayOfWeek,
-                        NumberOfWeek = lesson.Week,
-                        LessonTime = TimeSpan.Parse(lesson.TimeStart)
-                    };
-                    // get notification time 
-                    if (!fireTimes.Contains(firetime))
-                    {
-                        fireTimes.Add(firetime);
-                    }
-                }
-            }
-
-            return fireTimes;
-        }
+        // public async Task<IEnumerable<FireTime>> GetAllNotificationsFireTimes()
+        // {
+        //     // get all notifications 
+        //     // foreach student in notifications get all lessons 
+        //     // for timetable calculate notificationsTime 
+        //     // select all unique notification times  
+        //     var notificationsSettings = await _context.NotificationsSettings.ToListAsync();
+        //     var fireTimes = new List<FireTime>();
+        //     foreach (var notificationsSetting in 
+        //         notificationsSettings.Where(notificationsSetting => notificationsSetting.IsNotificationsOn))
+        //     {
+        //         var lessons = await GetLessonsForStudent(notificationsSetting.StudentId);
+        //         foreach (var lesson in lessons)
+        //         {
+        //             var notificationTime = DateTime.Parse(lesson.TimeStart)
+        //                 .AddMinutes(-notificationsSetting.TimeBeforeLesson).TimeOfDay;
+        //             var firetime = new FireTime
+        //             {
+        //                 Time = notificationTime,
+        //                 NumberOfDay = lesson.DayOfWeek,
+        //                 NumberOfWeek = lesson.Week,
+        //                 LessonTime = TimeSpan.Parse(lesson.TimeStart)
+        //             };
+        //             // get notification time 
+        //             if (!fireTimes.Contains(firetime))
+        //             {
+        //                 fireTimes.Add(firetime);
+        //             }
+        //         }
+        //     }
+        //
+        //     return fireTimes;
+        // }
 
         // time of lesson in format "8:30:00"
         public IEnumerable<Notification> GetAllNotificationsByThisTime( FireTime fireTime){
             // get all notifications 
             // foreach student in notifications get all lessons  
             // if lesson is next lesson, return it 
-            var notificationsSettings = _context.NotificationsSettings.ToList();
+            var notificationsSettings = _context.Students.Where(s => s.NotificationsSettings.IsNotificationsOn)
+                .Select(s => s.NotificationsSettings).ToList();
             var notifications = new List<Notification>();
             foreach (var notificationsSetting in notificationsSettings)
             {
-                if (!notificationsSetting.IsNotificationsOn)
-                {
-                    continue;
-                }
+               
                 var lessons = this.GetLessonsForStudentSync(notificationsSetting.StudentId);
                 notifications.AddRange(from lesson in lessons
                     where lesson.Week == fireTime.NumberOfWeek && lesson.DayOfWeek == fireTime.NumberOfDay &&
@@ -273,10 +271,11 @@ namespace Rozklad.V2.Services
                         Type = notificationsSetting.NotificationType
                     });
             }
+            
 
             return notifications;
         }
-
+        // todo optimize requests to databaase with iquerieble 
         public async Task AddUserTelegramChatInfoAsync(TelegramData data)
         {
             var student = await _context.Students.FirstOrDefaultAsync(s => s.Id == data.StudentId);

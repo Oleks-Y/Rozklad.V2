@@ -11,14 +11,10 @@ namespace Rozklad.V2.Scheduler
         private readonly IRecurringJobManager _recurringJobManager;
         private readonly INotificationJob _notificationJob;
 
-        private readonly ISchedulerService _schedulerService;
-
-        public JobManager(IRecurringJobManager recurringJobManager, INotificationJob notificationJob,
-            ISchedulerService schedulerService)
+        public JobManager(IRecurringJobManager recurringJobManager, INotificationJob notificationJob)
         {
             _recurringJobManager = recurringJobManager;
             _notificationJob = notificationJob;
-            _schedulerService = schedulerService;
         }
 
         public async Task AddJobs(IEnumerable<JobSchedule> schedules)

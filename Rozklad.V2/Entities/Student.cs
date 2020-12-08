@@ -30,10 +30,11 @@ namespace Rozklad.V2.Entities
         
         [JsonIgnore]
         public List<RefreshToken> RefreshTokens { get; set; }
-
-        [JsonIgnore]
-        [ForeignKey("NotificationSettings")]
+        
         public NotificationsSettings NotificationsSettings { get; set; }
+        
+        [ForeignKey("NotificationsSettings")]
+        public Guid NotificationsSettingsId { get; set; }
 
         // [NotMapped] public IEnumerable<string> Subjects { get; set; } 
     }

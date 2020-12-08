@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Rozklad.V2.Entities;
 using Rozklad.V2.Helpers;
@@ -10,29 +11,17 @@ namespace Rozklad.V2.Services
 {
     public class SchedulerService : ISchedulerService
     {
-        private readonly IRozkladRepository _repository;
+        private readonly INotificationRepository _notificationRepository;
         private readonly IJobManager _jobManager;
-        public SchedulerService(IRozkladRepository repository, IJobManager jobManager)
+        public SchedulerService(IJobManager jobManager, INotificationRepository notificationRepository)
         {
-            _repository = repository;
             _jobManager = jobManager;
+            _notificationRepository = notificationRepository;
         }
         
-        public async Task AddNotificationsForStudent(Guid studentId)
-        {
-            var schedules = await getSchedulesForStudent(studentId);
-            await _jobManager.AddJobs(schedules);
-        }
-
-        public async Task RemoveNotificationsForStudent(Guid studentId)
-        {
-            var schedules = await getSchedulesForStudent(studentId);
-            await _jobManager.RemoveJobs(schedules);
-        }
         
-        private async Task<IEnumerable<JobSchedule>> getSchedulesForStudent(Guid studentId)
+        private IEnumerable<JobSchedule> getSchedules(IEnumerable<FireTime> fireTimes)
         {
-            var fireTimes = await _repository.GetFireTimesForStudent(studentId);
             var schedules = fireTimes.Select(f =>
                 new JobSchedule
                 {
@@ -45,6 +34,41 @@ namespace Rozklad.V2.Services
             var distinctSchedules = jobSchedules.DistinctBy(s=>s.Cron).ToArray();
 
             return distinctSchedules;
+        }
+        /// <summary>
+        /// Command, that set ALL jobs, when will be sended notificatinos 
+        /// </summary>
+        /// <returns></returns>
+        
+       public void InitialalizeJobs()
+        {
+            var fireTimes = new List<FireTime>();
+            foreach (int week in NotificationsConfig.Weeks)
+            foreach (var day in NotificationsConfig.Days)
+            {
+                foreach (var lessonTime in NotificationsConfig.LessonsTimes)
+                {
+                    foreach (var timesBefforeLesson in NotificationsConfig.TimesBeforeLesson)
+                    {
+                        fireTimes.Add(new FireTime
+                        {
+                            NumberOfWeek = week,
+                            NumberOfDay = day,
+                            LessonTime = lessonTime,
+                            Time = lessonTime.Add(new TimeSpan(0,-timesBefforeLesson,0))
+                            
+                        });
+                    }
+                }
+            }
+
+            var timeSchedules = fireTimes.Select(f=>new JobSchedule
+            {
+                Cron = calculateCronExpresion(f),
+                FireTime = f
+            });
+
+            _jobManager.AddJobs(timeSchedules);
         }
         private static string calculateCronExpresion(FireTime fireTime)
         {
@@ -60,11 +84,18 @@ namespace Rozklad.V2.Services
                 6 => "SAT",
                 _ => ""
             };
-            var cronString = $"{fireTime.Time.Minutes} {fireTime.Time.Hours} * * {dayName}";
-    
+            string cronString;
+            if (NotificationsConfig.IsFirstWeekEven)
+            {
+                cronString = fireTime.NumberOfWeek == 1 ? 
+                    $"{fireTime.Time.Minutes} {fireTime.Time.Hours} 1-7,15-21,29-31 * {dayName}" : 
+                    $"{fireTime.Time.Minutes} {fireTime.Time.Hours} 8-14,22-28 * {dayName}";            }
+            else                                                                 {
+                cronString = fireTime.NumberOfWeek == 2 ?
+                    $"{fireTime.Time.Minutes} {fireTime.Time.Hours} 1-7,15-21,29-31 * {dayName}" : 
+                    $"{fireTime.Time.Minutes} {fireTime.Time.Hours} 8-14,22-28 * {dayName}";            }
             return cronString;
-        }
-
-        
+        }                                                            
+                                                                             
     }
 }

@@ -8,7 +8,15 @@ namespace Rozklad.V2.DataAccess
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
-        
+
+        // protected override void OnModelCreating(ModelBuilder modelBuilder)
+        // {
+        //     modelBuilder.Entity<Student>().OwnsOne<NotificationsSettings>(s=>s.NotificationsSettings, p =>
+        //     {
+        //         p.WithOwner().HasForeignKey("StudentId");
+        //     });
+        // }
+
         public DbSet<Student> Students { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
 

@@ -12,27 +12,24 @@ namespace Rozklad.V2.Telegram.Commands
     public class DisableNotificationsCommand : ICommand
     {
         private readonly IRozkladRepository _repository;
-        private readonly IJobManager _jobsManager;
-
-        public DisableNotificationsCommand(IRozkladRepository repository, IJobManager jobsManager)
+        private readonly INotificationRepository _notificationRepository;
+        public DisableNotificationsCommand(IRozkladRepository repository, INotificationRepository notificationRepository)
         {
             _repository = repository;
-            _jobsManager = jobsManager;
+            _notificationRepository = notificationRepository;
         }
         public static string Name => @"/disable";
         public  async Task Execute(Message message, TelegramBotClient client)
         {
-            // await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення вимкнено !");
-            // // todo перевірка наяності свовіщень 
-            // Console.WriteLine("We are here !");
-            // var student = await _repository.GetUserByTelegramId(message.From.Id);
-            // var notificationEntity = new NotificationsSettings
-            // {
-            //     StudentId = student.Id,
-            //     IsNotificationsOn = false
-            // };
-            // await _repository.UpdateNotification(notificationEntity);
-            // await _repository.SaveAsync();
+            
+            var student = await _repository.GetUserByTelegramId(message.Chat.Id);
+            if (student == null)
+            {
+                await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Тут текст з проханням зарєєструватись на сайті");
+            }
+
+            await _notificationRepository.DisableNotifications(student.Id);
+            await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення вимкнено!");
         }
 
         public  bool Contains(Message message)

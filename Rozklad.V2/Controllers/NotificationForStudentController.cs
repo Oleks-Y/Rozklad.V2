@@ -19,17 +19,18 @@ namespace Rozklad.V2.Controllers
         private readonly IRozkladRepository _repository;
         private IMapper _mapper;
         // todo rewrite this 
-        private readonly JobsManager _jobsManager;
-        public NotificationForStudentController(IRozkladRepository repository, IMapper mapper, JobsManager jobsManager)
+        private readonly IJobManager _jobsManager;
+        public NotificationForStudentController(IRozkladRepository repository, IMapper mapper, IJobManager jobsManager)
         {
             _repository = repository;
             _mapper = mapper;
-            _jobsManager = jobsManager;
+            // _jobsManager = jobsManager;
         }
 
         [HttpPost]
         public async Task<ActionResult> SetNotification(Guid studentId, [FromBody] NotificationsModel notificationsModel)
         {
+            if (notificationsModel == null) throw new ArgumentNullException(nameof(notificationsModel));
             // check if student exists 
             // update notifications
             //return 204
@@ -43,7 +44,6 @@ namespace Rozklad.V2.Controllers
             notificationEntity.StudentId = studentId;
             await _repository.UpdateNotification(notificationEntity);
             await _repository.SaveAsync();
-            await _jobsManager.RefreshJobs();
             var telegramDataExists = _repository.UserTelegramDataExists(studentId);
             if (notificationsModel.NotificationType == "Telegram" && !telegramDataExists)
             {

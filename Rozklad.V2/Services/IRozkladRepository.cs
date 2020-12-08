@@ -17,7 +17,7 @@ namespace Rozklad.V2.Services
 
         Task<Student> GetStudentAsync(Guid studentId);
 
-        Task UpdateNotification(NotificationsSettings notificationsInfo);
+        // Task UpdateNotification(NotificationsSettings notificationsInfo);
 
         public Task<IEnumerable<Lesson>> GetLessonsForStudent(Guid studentId);
 
@@ -44,7 +44,7 @@ namespace Rozklad.V2.Services
         IEnumerable<TelegramData> GetUserTelegramData(IEnumerable<Guid> studentsIds);
         bool UserTelegramDataExists(Guid studentId);
         Task<Student> GetUserByTelegramId(long telegramId);
-        
+        Task UpdateNotification(NotificationsSettings notificationsInfo); 
         Task SaveAsync();
     }
 }

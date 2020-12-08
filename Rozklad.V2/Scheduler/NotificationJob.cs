@@ -30,17 +30,17 @@ namespace Rozklad.V2.Scheduler
             //todo  enable it in prod 
             var now = DateTime.Now;
             // check by day 
-            if ((long)now.DayOfWeek != fireTime.NumberOfDay)
-            {
-                _logger.LogWarning($"Job {fireTime.Time} {fireTime.NumberOfDay} {fireTime.NumberOfWeek } runs late, stop job");
-                return;
-            }
-            // check by time 
-            if (now.TimeOfDay>fireTime.Time.Add(TimeSpan.FromMinutes(10)) || now.TimeOfDay<fireTime.Time.Subtract(TimeSpan.FromMinutes(10)))
-            {
-                _logger.LogWarning($"Job {fireTime.Time} {fireTime.NumberOfDay} {fireTime.NumberOfWeek } runs late, stop job");
-                return;                
-            }
+            // if ((long)now.DayOfWeek != fireTime.NumberOfDay)
+            // {
+            //     _logger.LogWarning($"Job {fireTime.Time} {fireTime.NumberOfDay} {fireTime.NumberOfWeek } runs late, stop job");
+            //     return;
+            // }
+            // // check by time 
+            // if (now.TimeOfDay>fireTime.Time.Add(TimeSpan.FromMinutes(10)) || now.TimeOfDay<fireTime.Time.Subtract(TimeSpan.FromMinutes(10)))
+            // {
+            //     _logger.LogWarning($"Job {fireTime.Time} {fireTime.NumberOfDay} {fireTime.NumberOfWeek } runs late, stop job");
+            //     return;                
+            // }
             // todo check by week 
             var notifications = _repository.GetAllNotificationsByThisTime(fireTime).ToList();
             var pushNotifications = notifications.Where(n => n.Type == "Push").ToList();

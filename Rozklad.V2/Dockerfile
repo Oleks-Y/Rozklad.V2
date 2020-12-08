@@ -8,7 +8,6 @@ COPY . .
 
 RUN dotnet restore "./Rozklad.V2.csproj"
 
-
 RUN dotnet publish "Rozklad.V2.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim

@@ -8,8 +8,6 @@ namespace Rozklad.V2.Services
 {
     public interface ISchedulerService
     {
-        Task AddNotificationsForStudent(Guid studentId);
-
-        Task RemoveNotificationsForStudent(Guid studentId);
+        void InitialalizeJobs();
     }
 }

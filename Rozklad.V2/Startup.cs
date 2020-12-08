@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Hangfire;
+using Hangfire.MemoryStorage;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -95,6 +96,7 @@ namespace Rozklad.V2
             // services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IRozkladRepository, RozkladRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<IJobManager, JobManager>();
             services.AddSingleton<TelegramValidationService>(s=>new TelegramValidationService(appSettings.BotToken));
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
@@ -116,17 +118,17 @@ namespace Rozklad.V2
                .UseFilter(new AutomaticRetryAttribute{ Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete})
                .UseSimpleAssemblyNameTypeSerializer()
                .UseRecommendedSerializerSettings()
-               .UsePostgreSqlStorage(Configuration.GetConnectionString("HangfireConnection")));
+               //.UsePostgreSqlStorage(Configuration.GetConnectionString("HangfireConnection")
+               .UseMemoryStorage()
+               );
            
            // Add the processing server as IHostedService
            services.AddHangfireServer();
            
            // Add framework services.
            services.AddMvc();
-           services.AddScoped<IJobManager>(); 
            services.AddScoped<ISchedulerService, SchedulerService>();
            services.AddScoped<INotificationJob, NotificationJob>();
-           services.AddScoped<NotificationJob>();
            services.AddScoped<ITelegramNotificationService, TelegramNotificationService>();
             // Telegram Bot start 
             services.AddScoped<StartCommand>();
@@ -138,7 +140,7 @@ namespace Rozklad.V2
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ISchedulerService schedulerService)
         {
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
@@ -192,7 +194,8 @@ namespace Rozklad.V2
             //     }
             // });
             
-            // jobsManager.RefreshJobs().GetAwaiter().GetResult();
+           schedulerService.InitialalizeJobs();
+            
         }
     }
 }
