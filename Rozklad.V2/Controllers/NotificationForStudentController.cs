@@ -27,30 +27,52 @@ namespace Rozklad.V2.Controllers
             // _jobsManager = jobsManager;
         }
 
+        // [HttpPost]
+        // public async Task<ActionResult> SetNotification(Guid studentId, [FromBody] NotificationsModel notificationsModel)
+        // {
+        //     if (notificationsModel == null) throw new ArgumentNullException(nameof(notificationsModel));
+        //     // check if student exists 
+        //     // update notifications
+        //     //return 204
+        //     var studentExists = _repository.StudentExists(studentId);
+        //     if (!studentExists)
+        //     {
+        //         return NotFound();
+        //     }
+        //     
+        //     var notificationEntity = _mapper.Map<NotificationsSettings>(notificationsModel);
+        //     notificationEntity.StudentId = studentId;
+        //     await _repository.UpdateNotification(notificationEntity);
+        //     await _repository.SaveAsync();
+        //     var telegramDataExists = _repository.UserTelegramDataExists(studentId);
+        //     if (notificationsModel.NotificationType == "Telegram" && !telegramDataExists)
+        //     {
+        //         return Ok(new {message = "Для роботи нотифікацій через телеграм бот, потрібно авторизуватись через телеграм, зайти в телеграмм бот і натиснути /start"});
+        //     }
+        //     return NoContent();
+        //     // if student telegram chat not exists, return it to client
+        // }
         [HttpPost]
-        public async Task<ActionResult> SetNotification(Guid studentId, [FromBody] NotificationsModel notificationsModel)
+        public async Task<ActionResult> SetNotifications(Guid studentId,
+            [FromBody] NotificationsModel notificationsModel)
         {
-            if (notificationsModel == null) throw new ArgumentNullException(nameof(notificationsModel));
-            // check if student exists 
-            // update notifications
-            //return 204
-            var studentExists = _repository.StudentExists(studentId);
-            if (!studentExists)
+            var student = _repository.GetStudentWithNotification(studentId);
+            if (student == null)
             {
                 return NotFound();
             }
             
-            var notificationEntity = _mapper.Map<NotificationsSettings>(notificationsModel);
-            notificationEntity.StudentId = studentId;
-            await _repository.UpdateNotification(notificationEntity);
+            var notificationentity = _mapper.Map<NotificationsSettings>(notificationsModel);
+            notificationentity.StudentId= studentId;
+            await _repository.UpdateNotification(notificationentity);
             await _repository.SaveAsync();
+            // todo test notifications 
             var telegramDataExists = _repository.UserTelegramDataExists(studentId);
             if (notificationsModel.NotificationType == "Telegram" && !telegramDataExists)
             {
                 return Ok(new {message = "Для роботи нотифікацій через телеграм бот, потрібно авторизуватись через телеграм, зайти в телеграмм бот і натиснути /start"});
             }
             return NoContent();
-            // if student telegram chat not exists, return it to client
         }
     }
 }

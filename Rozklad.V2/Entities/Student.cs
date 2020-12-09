@@ -34,7 +34,7 @@ namespace Rozklad.V2.Entities
         public NotificationsSettings NotificationsSettings { get; set; }
         
         [ForeignKey("NotificationsSettings")]
-        public Guid NotificationsSettingsId { get; set; }
+        public Guid? NotificationsSettingsId { get; set; }
 
         // [NotMapped] public IEnumerable<string> Subjects { get; set; } 
     }
