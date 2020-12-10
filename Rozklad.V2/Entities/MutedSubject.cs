@@ -5,9 +5,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Rozklad.V2.Entities
 {
     /// <summary>
-    /// When users authentificate via pasword, we need this, but when user registered via telegram, this field will be null 
+    /// this subjects only muted for notifications 
     /// </summary>
-    public class DisabledSubject
+    public class MutedSubject
     {
         [Key] public Guid Id { get; set; }
         [ForeignKey("Subjects")] public Guid SubjectId { get; set; }

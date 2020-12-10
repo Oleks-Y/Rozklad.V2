@@ -20,11 +20,17 @@ namespace Rozklad.V2.Entities
         
         public string Username { get; set; }
         
-        
+        /// <summary>
+        /// When users authentificate via pasword, we need this, but when user registered via telegram, this field will be null 
+        /// </summary>
         public byte[] PasswordHash { get; set; }
+        /// <summary>
+        /// When users authentificate via pasword, we need this, but when user registered via telegram, this field will be null 
+        /// </summary>
         public byte[] PasswordSalt { get; set; }
 
         public IEnumerable<DisabledSubject> DisabledSubjects { get; set; }
+        public IEnumerable<DisabledSubject> MutedSubjects { get; set; }
         
         public long? Telegram_Id { get; set; }
         

@@ -6,6 +6,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Rozklad.V2.Entities
 {
+    /// <summary>
+    /// Entity, that contains information about discipline , unique for group 
+    /// </summary>
     public class Subject
     {
 

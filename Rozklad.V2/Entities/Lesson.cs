@@ -4,6 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Rozklad.V2.Entities
 {
+    /// <summary>
+    /// Entity with data about time of lesson, and what discipline it`s
+    /// </summary>
     public class Lesson 
     {    
         [Key]
