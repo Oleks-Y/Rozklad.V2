@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper.Internal;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 using Rozklad.V2.Helpers;
@@ -41,14 +42,13 @@ namespace Rozklad.V2.Scheduler
             //     _logger.LogWarning($"Job {fireTime.Time} {fireTime.NumberOfDay} {fireTime.NumberOfWeek } runs late, stop job");
             //     return;                
             // }
-            // todo check by week 
-            var notifications = _repository.GetAllNotificationsByThisTime(fireTime).ToList();
+            var notifications = _repository.GetAllNotificationsByThisTime(fireTime)
+                .GroupBy(n=>n.StudentId)
+                .SelectMany(g=>g.DistinctBy(n=>n.Lesson.Id))
+                .ToList();
+            // todo distinct notifiactions by student id, time 
             var pushNotifications = notifications.Where(n => n.Type == "Push").ToList();
             var telegramNotifications = notifications.Where(n => n.Type == "Telegram").ToList();
-            // This method cause null exception
-            // I can`t properly debug it 
-            // But anyway, it works,
-            // So if AutomaticRetry is selected, everything goes fine
             _telegramNotifications.SendNotifications(telegramNotifications);
 
         }
