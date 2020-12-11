@@ -9,6 +9,7 @@ using Rozklad.V2.Entities;
 using Rozklad.V2.Exceptions;
 using Rozklad.V2.Helpers;
 using Rozklad.V2.Models;
+using Rozklad.V2.Pages;
 
 namespace Rozklad.V2.Services
 {
@@ -36,6 +37,12 @@ namespace Rozklad.V2.Services
             return subjects;
         }
 
+
+        public async Task UnmuteSubject(Guid studentId, Guid subjectId)
+        {
+             var subjectsToRemove = await _context.MutedSubjects.Where(s=>s.StudentId==studentId && s.SubjectId==subjectId).ToListAsync();
+             _context.RemoveRange(subjectsToRemove);
+        }
 
         public Task<Student> GetStudentWithNotification(Guid studentId)
         {
@@ -76,6 +83,16 @@ namespace Rozklad.V2.Services
                 .FirstOrDefaultAsync(s => s.Id == studentId);
         }
 
+        public async Task MuteSubject(Guid studentId, Guid subjectId)
+        {
+            await _context.AddAsync(new MutedSubject
+            {
+                Id = Guid.NewGuid(),
+                StudentId = studentId,
+                SubjectId = subjectId
+            });
+        }
+
         public async Task<IEnumerable<Subject>> GetSubjectsForStudentAsync(Guid studentId)
         {
             // Get all subject for student group 
@@ -84,7 +101,7 @@ namespace Rozklad.V2.Services
             var student = await _context.Students.Include("Group").Include("Group.Subjects").Include("DisabledSubjects")
                 .FirstOrDefaultAsync(s => s.Id == studentId);
             var disabledSubejcts = student.DisabledSubjects;
-
+            // todo remove muted subjects 
             return student.Group.Subjects.Where(s => disabledSubejcts.All(ds => ds.SubjectId != s.Id));
         }
 
@@ -110,19 +127,23 @@ namespace Rozklad.V2.Services
                 StudentId = studentId,
                 SubjectId = subjectId
             });
+            await _context.MutedSubjects.AddAsync(new MutedSubject
+            {
+                Id = Guid.NewGuid(),
+                StudentId = studentId,
+                SubjectId = subjectId
+            });
         }
 
-        public void EnableSubject(Guid studentId, Guid subjectId)
+        public async  Task EnableSubject(Guid studentId, Guid subjectId)
         {
             var toRemove =
                 _context.DisabledSubjects.Where(s => s.StudentId == studentId && s.SubjectId == subjectId);
+            var toUnmute = _context.MutedSubjects.Where(s => s.StudentId == studentId && s.SubjectId == subjectId);
             _context.DisabledSubjects.RemoveRange(toRemove);
+            _context.MutedSubjects.RemoveRange(toUnmute);
         }
 
-        public void AddStudent(Student student)
-        {
-            throw new NotImplementedException();
-        }
 
         public void UpdateSubject(Subject subject)
         {

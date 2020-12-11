@@ -30,7 +30,7 @@ namespace Rozklad.V2.Entities
         public byte[] PasswordSalt { get; set; }
 
         public IEnumerable<DisabledSubject> DisabledSubjects { get; set; }
-        public IEnumerable<DisabledSubject> MutedSubjects { get; set; }
+        public IEnumerable<MutedSubject> MutedSubjects { get; set; }
         
         public long? Telegram_Id { get; set; }
         

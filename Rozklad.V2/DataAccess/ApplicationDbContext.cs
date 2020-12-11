@@ -29,6 +29,8 @@ namespace Rozklad.V2.DataAccess
         public DbSet<NotificationsSettings> NotificationsSettings { get; set; }
 
         public DbSet<TelegramData> TelegramData { get; set; }
+
+        public DbSet<MutedSubject> MutedSubjects { get; set; }
         
     }
 }

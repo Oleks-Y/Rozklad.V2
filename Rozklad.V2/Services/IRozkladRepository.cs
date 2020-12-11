@@ -16,7 +16,8 @@ namespace Rozklad.V2.Services
         Group GetGroupByName(string groupName);
 
         Task<Student> GetStudentAsync(Guid studentId);
-
+        Task MuteSubject(Guid studentId, Guid subjectId);
+        Task UnmuteSubject(Guid studentId, Guid subjectId);
         Task<Student> GetStudentWithNotification(Guid studentId);
         // Task UpdateNotification(NotificationsSettings notificationsInfo);
 
@@ -25,7 +26,7 @@ namespace Rozklad.V2.Services
         Task<IEnumerable<Subject>> GetSubjectsForStudentAsync(Guid studentId);
         Task<IEnumerable<Lesson>> GetLessonsForGroupAsync(Guid groupId);
         Task DisableSubjectAsync(Guid studentId, Guid subjectId);
-        void EnableSubject(Guid studentId, Guid subjectId);
+        Task EnableSubject(Guid studentId, Guid subjectId);
 
         void UpdateSubject(Subject subject);
         Task<IEnumerable<Group>> GetAllGroupsAsync();

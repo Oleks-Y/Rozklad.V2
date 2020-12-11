@@ -26,7 +26,6 @@ namespace Rozklad.V2.Scheduler
         [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete,Order = 0)]
         public  void Execute(FireTime fireTime)
         {
-            // Todo add week number 
             // don`t run job, if it too late 
             //todo  enable it in prod 
             var now = DateTime.Now;
@@ -46,7 +45,6 @@ namespace Rozklad.V2.Scheduler
                 .GroupBy(n=>n.StudentId)
                 .SelectMany(g=>g.DistinctBy(n=>n.Lesson.Id))
                 .ToList();
-            // todo distinct notifiactions by student id, time 
             var pushNotifications = notifications.Where(n => n.Type == "Push").ToList();
             var telegramNotifications = notifications.Where(n => n.Type == "Telegram").ToList();
             _telegramNotifications.SendNotifications(telegramNotifications);

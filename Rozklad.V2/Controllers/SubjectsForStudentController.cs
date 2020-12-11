@@ -27,31 +27,6 @@ namespace Rozklad.V2.Controllers
             _repository = repository;
         }
 
-        // [HttpGet]
-        // public async  Task<ActionResult<IEnumerable<SubjectDto>>> GetSubjecs(Guid studentId)
-        // {
-        //     // Get student id 
-        //     // Get student group
-        //     // Get all subjects to hroup 
-        //     // Check if there is banned subjects 
-        //     if (string.IsNullOrEmpty(studentId.ToString()))
-        //     {
-        //         return NotFound();
-        //     }
-        //     var student = await _repository.GetStudent(studentId);
-        //     if (student == null)
-        //     {
-        //         return BadRequest();
-        //     }
-        //     if (student?.Group == null)
-        //     {
-        //         return BadRequest();
-        //     }
-        //     var group = student.Group;
-        //     var subjectsDtos = group.Subjects.Select(s => _mapper.Map<SubjectDto>(s)).ToList();
-        //     
-        //     return subjectsDtos;
-        // }
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SubjectDto>>> GetSubjecs(Guid studentId)
         {
@@ -137,14 +112,87 @@ namespace Rozklad.V2.Controllers
             var subject = await _repository.GetSubjectAsync(subjectId);
             if (subject == null)
             {
+                // todo all error reponses returns
+                // {
+                //    "message" : "message text"
+                // }
                 return BadRequest("Subject won`t exists");
             }
             // disable 
-            _repository.EnableSubject(student.Id, subject.Id);
+            await _repository.EnableSubject(student.Id, subject.Id);
             await _repository.SaveAsync();
 
             return NoContent();
         }
-        
+        // todo mute
+        [HttpPatch("{subject:guid}/mute")]
+        public async Task<IActionResult> MuteSubject(Guid studentId, Guid subjectId)
+        {
+            
+            if (string.IsNullOrEmpty(studentId.ToString()))
+            {
+                return NotFound();
+            }
+            var student = await _repository.GetStudentAsync(studentId);
+            if (student == null)
+            {
+                return BadRequest(new
+                {
+                    message = "Student don`t exist"
+                });
+
+            }
+
+            // todo check if subject already muted
+            // todo it always return null, but in other methods this method is ok
+            var subject = await _repository.GetSubjectAsync(subjectId);
+            if (subject == null)
+            {
+                return BadRequest(new
+                {
+                    message = "Subject don`t exist"
+                });
+            }
+            
+            // mute 
+
+            await _repository.MuteSubject(student.Id, subject.Id);
+            await _repository.SaveAsync();
+
+            return NoContent();
+        }
+        [HttpPatch("{subject:guid}/unmute")]
+        public async Task<IActionResult> UnmuteSubject(Guid studentId, Guid subjectId)
+        {
+            
+            // todo check if subject already ubmuted 
+            if (string.IsNullOrEmpty(studentId.ToString()))
+            {
+                return NotFound();
+            }
+            var student = await _repository.GetStudentAsync(studentId);
+            if (student == null)
+            {
+                return BadRequest(new
+                {
+                    message = "Student don`t exist"
+                });
+            }
+
+            var subject = await _repository.GetSubjectAsync(subjectId);
+            if (subject == null)
+            {
+                return BadRequest(new
+                {
+                    message = "Subject don`t exist"
+                });
+            }
+            
+            // unmute 
+            await _repository.UnmuteSubject(student.Id, subject.Id);
+            await _repository.SaveAsync();
+
+            return NoContent();
+        }
     }
 }
