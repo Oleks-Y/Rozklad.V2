@@ -16,6 +16,8 @@ namespace Rozklad.V2.Controllers
     [Route("api/student")]
     public class AuthController : ControllerBase
     {
+        // todo allows student change telegram account  
+        // need to secure way to change telegram account
         private readonly IUserSerice _userSerice;
         private readonly IMapper _mapper;
         private readonly IRozkladRepository _repository;
@@ -43,6 +45,9 @@ namespace Rozklad.V2.Controllers
                 GroupName = student.Group.Group_Name
             });
         }
+        
+        // todo changing group | when group chnaged, need delete all muted and disabled subjects for student 
+        // todo changing telegram account 
         // todo some users in telegram don`t have username 
         [AllowAnonymous]
         [HttpPost("telegram")]

@@ -24,6 +24,8 @@ namespace Rozklad.V2.Controllers
             _rozkladRepository = rozkladRepository;
         }
 
+        // todo allow student to change group
+        // todo when student change group, delete all disabled and muted subjects 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<string>>> GetGroups()
         {

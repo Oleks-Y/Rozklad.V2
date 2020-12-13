@@ -112,7 +112,6 @@ namespace Rozklad.V2.Controllers
             var subject = await _repository.GetSubjectAsync(subjectId);
             if (subject == null)
             {
-                // todo all error reponses returns
                 // {
                 //    "message" : "message text"
                 // }
@@ -124,8 +123,7 @@ namespace Rozklad.V2.Controllers
 
             return NoContent();
         }
-        // todo mute
-        [HttpPatch("{subject:guid}/mute")]
+        [HttpPatch("{subjectId:guid}/mute")]
         public async Task<IActionResult> MuteSubject(Guid studentId, Guid subjectId)
         {
             
@@ -143,8 +141,6 @@ namespace Rozklad.V2.Controllers
 
             }
 
-            // todo check if subject already muted
-            // todo it always return null, but in other methods this method is ok
             var subject = await _repository.GetSubjectAsync(subjectId);
             if (subject == null)
             {
@@ -161,11 +157,10 @@ namespace Rozklad.V2.Controllers
 
             return NoContent();
         }
-        [HttpPatch("{subject:guid}/unmute")]
+        [HttpPatch("{subjectId:guid}/unmute")]
         public async Task<IActionResult> UnmuteSubject(Guid studentId, Guid subjectId)
         {
             
-            // todo check if subject already ubmuted 
             if (string.IsNullOrEmpty(studentId.ToString()))
             {
                 return NotFound();

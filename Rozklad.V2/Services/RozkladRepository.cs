@@ -101,8 +101,10 @@ namespace Rozklad.V2.Services
             var student = await _context.Students.Include("Group").Include("Group.Subjects").Include("DisabledSubjects")
                 .FirstOrDefaultAsync(s => s.Id == studentId);
             var disabledSubejcts = student.DisabledSubjects;
-            // todo remove muted subjects 
-            return student.Group.Subjects.Where(s => disabledSubejcts.All(ds => ds.SubjectId != s.Id));
+            // var mutedSubjects = student.MutedSubjects;
+            return student.Group.Subjects
+                .Where(s => disabledSubejcts.All(ds => ds.SubjectId != s.Id));
+                // .Where(s=> mutedSubjects.Any(ms=>ms.SubjectId != s.Id));
         }
 
         public async Task<IEnumerable<Lesson>> GetLessonsForGroupAsync(Guid groupId)
@@ -223,6 +225,7 @@ namespace Rozklad.V2.Services
                 .ThenInclude(s => s.Lessons)
                 .ThenInclude(l => l.Subject)
                 .Include(s => s.DisabledSubjects)
+                .Include(s => s.MutedSubjects)
                 .Where(s => s.NotificationsSettings.IsNotificationsOn).ToList();
             var lessons = students.SelectMany(s => s.Group.Subjects).SelectMany(s => s.Lessons).ToList();
             var notifications = new List<Notification>();
@@ -234,8 +237,8 @@ namespace Rozklad.V2.Services
                     .Where(l => l.Week == fireTime.NumberOfWeek && l.DayOfWeek == fireTime.NumberOfDay &&
                                 l.TimeStart == fireTime.LessonTime.ToString())
                     // remove all subjects, disabled by this student 
-                    .Where(l => !student.DisabledSubjects.Select(s => s.SubjectId).Contains(l.SubjectId));
-                // todo remove all subjects, that muted by student 
+                    .Where(l => student.DisabledSubjects.All(ds => ds.SubjectId != l.SubjectId))
+                    .Where(l => student.MutedSubjects.All(ms => ms.SubjectId != l.SubjectId));
                 notifications.AddRange(studentLessons.Select(l => new Notification
                 {
                     Lesson = l,
