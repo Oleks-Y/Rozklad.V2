@@ -6,7 +6,7 @@ namespace Rozklad.V2.Telegram.Actions
 {
     public class NotificationsAction
     {
-        public static void Send(Notification notification, long chat_id)
+        public static async Task Send(Notification notification, long chat_id)
         {
             var lessonName = notification.Lesson.Subject.Name;
             var link = "";
@@ -27,7 +27,7 @@ namespace Rozklad.V2.Telegram.Actions
             message = accesCode != string.Empty ? 
                 $"Скоро пара ! {lessonName}\n Посилання: {link} \n Код доступу {accesCode}" 
                 : $"Скоро пара ! {lessonName}\n Посилання: {link} ";
-            Bot.BotClient.SendTextMessageAsync(chat_id, message).Wait();
+            await Bot.BotClient.SendTextMessageAsync(chat_id, message);
         }
     }
 }

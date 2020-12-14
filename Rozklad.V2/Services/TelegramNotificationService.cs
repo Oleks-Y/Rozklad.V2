@@ -24,7 +24,7 @@ namespace Rozklad.V2.Services
         }
 
 
-        public void SendNotifications(IEnumerable<Notification> notifications)
+        public async Task SendNotifications(IEnumerable<Notification> notifications)
         {
             // check if chat id exists 
             // get all students 
@@ -54,7 +54,7 @@ namespace Rozklad.V2.Services
                     _logger.LogWarning($"User {studentId} not have chatId");
                 }
                 _logger.LogInformation($"User {first.StudentId} with chat id {first.TelegramChatId}. Sending notification {notification.Lesson.Id}");
-                NotificationsAction.Send(notification, chatId.Value);
+                await NotificationsAction.Send(notification, chatId.Value);
             }
         }
     }

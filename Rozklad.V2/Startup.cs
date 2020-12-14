@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
@@ -55,6 +56,7 @@ namespace Rozklad.V2
             {
                 options.UseNpgsql(Configuration.GetConnectionString("Connection"));
             });
+
             services.AddScoped<IUserSerice, UserSerivce>();
             services.AddControllersWithViews();
             var appSettings = appSettingsSection.Get<AppSettings>();
@@ -126,7 +128,7 @@ namespace Rozklad.V2
            services.AddHangfireServer();
            
            // Add framework services.
-           services.AddMvc();
+           services.AddMvc().AddNewtonsoftJson(s=>s.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
            services.AddScoped<ISchedulerService, SchedulerService>();
            services.AddScoped<INotificationJob, NotificationJob>();
            services.AddScoped<ITelegramNotificationService, TelegramNotificationService>();

@@ -24,7 +24,7 @@ namespace Rozklad.V2.Scheduler
             _logger = logger;
         }
         [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete,Order = 0)]
-        public  void Execute(FireTime fireTime)
+        public  async Task Execute(FireTime fireTime)
         {
             // don`t run job, if it too late 
             //todo  enable it in prod 
@@ -41,7 +41,7 @@ namespace Rozklad.V2.Scheduler
             //     _logger.LogWarning($"Job {fireTime.Time} {fireTime.NumberOfDay} {fireTime.NumberOfWeek } runs late, stop job");
             //     return;                
             // }
-            var notifications = _repository.GetAllNotificationsByThisTime(fireTime)
+            var notifications = (await _repository.GetAllNotificationsByThisTime(fireTime))
                 .GroupBy(n=>n.StudentId)
                 .SelectMany(g=>g.DistinctBy(n=>n.Lesson.Id))
                 .ToList();

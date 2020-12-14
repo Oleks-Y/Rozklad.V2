@@ -7,6 +7,6 @@ namespace Rozklad.V2.Scheduler
     public interface INotificationJob
     {
         [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete)]
-        public void Execute(FireTime fireTime);
+        public Task Execute(FireTime fireTime);
     }
 }

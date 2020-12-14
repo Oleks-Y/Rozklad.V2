@@ -215,10 +215,10 @@ namespace Rozklad.V2.Services
         }
 
 
-        public IEnumerable<Notification> GetAllNotificationsByThisTime(FireTime fireTime)
+        public async Task<IEnumerable<Notification>> GetAllNotificationsByThisTime(FireTime fireTime)
         {
             // it makes only one big request to database 
-            var students = _context.Students
+            var students = await _context.Students
                 .Include(s => s.NotificationsSettings)
                 .Include(s => s.Group)
                 .ThenInclude(g => g.Subjects)
@@ -226,7 +226,7 @@ namespace Rozklad.V2.Services
                 .ThenInclude(l => l.Subject)
                 .Include(s => s.DisabledSubjects)
                 .Include(s => s.MutedSubjects)
-                .Where(s => s.NotificationsSettings.IsNotificationsOn).ToList();
+                .Where(s => s.NotificationsSettings.IsNotificationsOn).ToListAsync();
             var lessons = students.SelectMany(s => s.Group.Subjects).SelectMany(s => s.Lessons).ToList();
             var notifications = new List<Notification>();
             foreach (var student in students)

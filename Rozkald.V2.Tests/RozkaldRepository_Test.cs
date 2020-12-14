@@ -157,7 +157,7 @@ namespace Rozkald.V2.Tests
                     NumberOfDay = 1,
                     NumberOfWeek = 1
                 };
-                result1 = (repository.GetAllNotificationsByThisTime(fireTime1)).ToList();
+                // result1 = (repository.GetAllNotificationsByThisTime(fireTime1)).ToList();
             }
 
             //Assert 

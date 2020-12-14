@@ -7,6 +7,6 @@ namespace Rozklad.V2.Services
 {
     public interface ITelegramNotificationService
     {
-        void SendNotifications(IEnumerable<Notification> notification);
+        Task SendNotifications(IEnumerable<Notification> notification);
     }
 }
