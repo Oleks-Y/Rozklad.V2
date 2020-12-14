@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Hangfire;
+using Hangfire.MemoryStorage;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -17,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
@@ -54,6 +56,7 @@ namespace Rozklad.V2
             {
                 options.UseNpgsql(Configuration.GetConnectionString("Connection"));
             });
+
             services.AddScoped<IUserSerice, UserSerivce>();
             services.AddControllersWithViews();
             var appSettings = appSettingsSection.Get<AppSettings>();
@@ -94,6 +97,8 @@ namespace Rozklad.V2
             services.AddControllersWithViews().AddNewtonsoftJson();
             // services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IRozkladRepository, RozkladRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<IJobManager, JobManager>();
             services.AddSingleton<TelegramValidationService>(s=>new TelegramValidationService(appSettings.BotToken));
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
@@ -115,17 +120,17 @@ namespace Rozklad.V2
                .UseFilter(new AutomaticRetryAttribute{ Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete})
                .UseSimpleAssemblyNameTypeSerializer()
                .UseRecommendedSerializerSettings()
-               .UsePostgreSqlStorage(Configuration.GetConnectionString("HangfireConnection")));
+               //.UsePostgreSqlStorage(Configuration.GetConnectionString("HangfireConnection")
+               .UseMemoryStorage()
+               );
            
            // Add the processing server as IHostedService
            services.AddHangfireServer();
            
            // Add framework services.
-           services.AddMvc();
-           services.AddScoped<JobsManager>();
+           services.AddMvc().AddNewtonsoftJson(s=>s.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
            services.AddScoped<ISchedulerService, SchedulerService>();
            services.AddScoped<INotificationJob, NotificationJob>();
-           services.AddScoped<NotificationJob>();
            services.AddScoped<ITelegramNotificationService, TelegramNotificationService>();
             // Telegram Bot start 
             services.AddScoped<StartCommand>();
@@ -137,7 +142,7 @@ namespace Rozklad.V2
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,JobsManager jobsManager)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ISchedulerService schedulerService)
         {
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
@@ -191,7 +196,8 @@ namespace Rozklad.V2
             //     }
             // });
             
-            jobsManager.RefreshJobs().GetAwaiter().GetResult();
+           schedulerService.InitialalizeJobs();
+            
         }
     }
 }

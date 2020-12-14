@@ -16,17 +16,11 @@ namespace Rozklad.V2.Controllers
     [Route("api/student/{studentId:guid}/timetable")]
     public class TimeTableController : ControllerBase
     {
-        private IStudentService _studentService;
-        private IMapper _mapper;
-        private readonly AppSettings _appSettings;
         private readonly IRozkladRepository _repository;
 
-        public TimeTableController(IStudentService studentService, IMapper mapper, IOptions<AppSettings> appSettings,
+        public TimeTableController(
             IRozkladRepository repository)
         {
-            _studentService = studentService;
-            _mapper = mapper;
-            _appSettings = appSettings.Value;
             _repository = repository;
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper.Internal;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 using Rozklad.V2.Helpers;
@@ -23,32 +24,29 @@ namespace Rozklad.V2.Scheduler
             _logger = logger;
         }
         [AutomaticRetry(Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete,Order = 0)]
-        public  void Execute(FireTime fireTime)
+        public  async Task Execute(FireTime fireTime)
         {
-            // Todo add week number 
             // don`t run job, if it too late 
             //todo  enable it in prod 
             var now = DateTime.Now;
             // check by day 
-            if ((long)now.DayOfWeek != fireTime.NumberOfDay)
-            {
-                _logger.LogWarning($"Job {fireTime.Time} {fireTime.NumberOfDay} {fireTime.NumberOfWeek } runs late, stop job");
-                return;
-            }
-            // check by time 
-            if (now.TimeOfDay>fireTime.Time.Add(TimeSpan.FromMinutes(10)) || now.TimeOfDay<fireTime.Time.Subtract(TimeSpan.FromMinutes(10)))
-            {
-                _logger.LogWarning($"Job {fireTime.Time} {fireTime.NumberOfDay} {fireTime.NumberOfWeek } runs late, stop job");
-                return;                
-            }
-            // todo check by week 
-            var notifications = _repository.GetAllNotificationsByThisTime(fireTime).ToList();
+            // if ((long)now.DayOfWeek != fireTime.NumberOfDay)
+            // {
+            //     _logger.LogWarning($"Job {fireTime.Time} {fireTime.NumberOfDay} {fireTime.NumberOfWeek } runs late, stop job");
+            //     return;
+            // }
+            // // check by time 
+            // if (now.TimeOfDay>fireTime.Time.Add(TimeSpan.FromMinutes(10)) || now.TimeOfDay<fireTime.Time.Subtract(TimeSpan.FromMinutes(10)))
+            // {
+            //     _logger.LogWarning($"Job {fireTime.Time} {fireTime.NumberOfDay} {fireTime.NumberOfWeek } runs late, stop job");
+            //     return;                
+            // }
+            var notifications = (await _repository.GetAllNotificationsByThisTime(fireTime))
+                .GroupBy(n=>n.StudentId)
+                .SelectMany(g=>g.DistinctBy(n=>n.Lesson.Id))
+                .ToList();
             var pushNotifications = notifications.Where(n => n.Type == "Push").ToList();
             var telegramNotifications = notifications.Where(n => n.Type == "Telegram").ToList();
-            // This method cause null exception
-            // I can`t properly debug it 
-            // But anyway, it works,
-            // So if AutomaticRetry is selected, everything goes fine
             _telegramNotifications.SendNotifications(telegramNotifications);
 
         }

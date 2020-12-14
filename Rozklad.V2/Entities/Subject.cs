@@ -6,6 +6,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Rozklad.V2.Entities
 {
+    /// <summary>
+    /// Entity, that contains information about discipline , unique for group 
+    /// </summary>
     public class Subject
     {
 
@@ -25,6 +28,8 @@ namespace Rozklad.V2.Entities
         public string LessonsAccessCode { get; set; }
         
         public string LabsAccessCode { get; set; }
+
+        public IEnumerable<Lesson> Lessons { get; set; }
 
     }
 }

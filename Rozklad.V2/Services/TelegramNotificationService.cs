@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Rozklad.V2.Entities;
 using Rozklad.V2.Telegram.Actions;
 using Serilog;
@@ -23,11 +24,11 @@ namespace Rozklad.V2.Services
         }
 
 
-        public void SendNotifications(IEnumerable<Notification> notifications)
+        public async Task SendNotifications(IEnumerable<Notification> notifications)
         {
             // check if chat id exists 
             // get all students 
-            
+            _logger.LogInformation("Sending notifications"); 
             var studentIds = notifications.Select(s => s.StudentId).ToList();
             var telegramData = _repository.GetUserTelegramData(studentIds).ToList();
             if (telegramData.Count==0)
@@ -52,7 +53,8 @@ namespace Rozklad.V2.Services
                     // chat Id not exists
                     _logger.LogWarning($"User {studentId} not have chatId");
                 }
-                NotificationsAction.Send(notification, chatId.Value);
+                _logger.LogInformation($"User {first.StudentId} with chat id {first.TelegramChatId}. Sending notification {notification.Lesson.Id}");
+                await NotificationsAction.Send(notification, chatId.Value);
             }
         }
     }

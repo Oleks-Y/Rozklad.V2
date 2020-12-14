@@ -16,26 +16,24 @@ namespace Rozklad.V2.Services
         Group GetGroupByName(string groupName);
 
         Task<Student> GetStudentAsync(Guid studentId);
-
-        Task UpdateNotification(NotificationsSettings notificationsInfo);
+        Task MuteSubject(Guid studentId, Guid subjectId);
+        Task UnmuteSubject(Guid studentId, Guid subjectId);
+        Task<Student> GetStudentWithNotification(Guid studentId);
+        // Task UpdateNotification(NotificationsSettings notificationsInfo);
 
         public Task<IEnumerable<Lesson>> GetLessonsForStudent(Guid studentId);
 
         Task<IEnumerable<Subject>> GetSubjectsForStudentAsync(Guid studentId);
         Task<IEnumerable<Lesson>> GetLessonsForGroupAsync(Guid groupId);
         Task DisableSubjectAsync(Guid studentId, Guid subjectId);
-        void EnableSubject(Guid studentId, Guid subjectId);
+        Task EnableSubject(Guid studentId, Guid subjectId);
 
         void UpdateSubject(Subject subject);
         Task<IEnumerable<Group>> GetAllGroupsAsync();
 
         bool StudentExists(Guid studentId);
-
-        Task<IEnumerable<NotificationsSettings>> GetAllNotificationsSettings();
-
-        Task<IEnumerable<FireTime>> GetAllNotificationsFireTimes();
-
-        IEnumerable<Notification> GetAllNotificationsByThisTime(FireTime fireTime);
+        Task UpdateNotification(NotificationsSettings notificationsSettings);
+        Task<IEnumerable<Notification>> GetAllNotificationsByThisTime(FireTime fireTime);
 
         Task AddUserTelegramChatInfoAsync(TelegramData data);
         Task<bool> UserDataExistsAsync(long telegramId);
@@ -43,7 +41,6 @@ namespace Rozklad.V2.Services
         IEnumerable<TelegramData> GetUserTelegramData(IEnumerable<Guid> studentsIds);
         bool UserTelegramDataExists(Guid studentId);
         Task<Student> GetUserByTelegramId(long telegramId);
-        
         Task SaveAsync();
     }
 }
