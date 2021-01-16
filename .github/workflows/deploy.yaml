@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build_and_pub:
@@ -15,7 +18,7 @@ jobs:
     steps:
       - name: Login to docker.io
         # Сначала мы логинимся в docker.io
-        run:  echo ${{ secrets.DOCKER_PWD }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
+        run: echo ${{ secrets.DOCKER_PWD }} | docker login -u ${{ secrets.DOCKER_LOGIN }} --password-stdin
         # Чекаутим код
       - uses: actions/checkout@master
       - name: Build image
@@ -24,7 +27,7 @@ jobs:
       - name: Push image to docker.io
         # Пушим образ в registry
         run: docker push $LOGIN/$NAME:${GITHUB_REF:11}
-  deploy :
+  deploy:
     needs: build_and_pub
     runs-on: ubuntu-latest
     steps:
@@ -35,9 +38,9 @@ jobs:
       - name:
         uses: appleboy/ssh-action@master
         with:
-          host : ${{ secrets.HOST }}
+          host: ${{ secrets.HOST }}
           username: ${{ secrets.HOST_USER }}
-          password : ${{ secrets.HOST_PASSWORD }}
+          password: ${{ secrets.HOST_PASSWORD }}
           port: "22"
           script: |
             docker rm $(docker stop $(docker ps -a -q --filter ancestor=${{ secrets.DOCKER_LOGIN }}/${{ secrets.DOCKER_NAME }}:master --format="{{.ID}}"))
