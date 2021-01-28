@@ -15,5 +15,7 @@ namespace Rozklad.V2.Services
         Student Create(Student student, string passrord);
 
         Student CreateFromTelegram(Student student, long telegramId);
+
+      
     }
 }

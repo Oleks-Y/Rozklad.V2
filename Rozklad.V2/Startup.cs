@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -100,8 +99,7 @@ namespace Rozklad.V2
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IJobManager, JobManager>();
             services.AddSingleton<TelegramValidationService>(s=>new TelegramValidationService(appSettings.BotToken));
-            // In production, the React files will be served from this directory
-            services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
+            // In production, the React files will be served from this director
             services.AddSwaggerGen(options =>
             {
                 options.DescribeAllEnumsAsStrings();
@@ -162,7 +160,6 @@ namespace Rozklad.V2
             
             // it needs for create bot service and setWebhook
             app.UseStaticFiles();
-            app.UseSpaStaticFiles();
 
             app.UseRouting();
             app.UseCors(x => x

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
+using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Rozklad.V2.DataAccess;
@@ -57,7 +59,7 @@ namespace Rozklad.V2.Services
             }
 
             // if exists-  auth 
-            if (student.Group.Id != model.GroupId)
+            if (student.GroupId != model.GroupId)
             {
                 return null;
             }
@@ -74,6 +76,52 @@ namespace Rozklad.V2.Services
             return new AuthenticateResponse {Student = student, JwtToken = jwt, RefreshToken = refreshToken.Token};
         }
 
+        public async Task<AuthenticateResponse> AuthentificateWithGoogle(AuthentificateRequestGoogle model, string ipAddress)
+        {
+            //Same as telegram logic
+            var student = _context.Students
+                .Include("Group")
+                .Include("RefreshTokens")
+                // HERE USERNAME IS EMAIL 
+                .SingleOrDefault(s => s.Username == model.User.Email);
+            if (student == null)
+            {
+                student = new Student
+                {
+                    Id = Guid.NewGuid(),
+                    Username = model.User.Email,
+                    FirstName = model.User.GivenName,
+                    LastName = model.User.FamilyName,
+                    GroupId = model.GroupId,
+                };
+
+                await _context.Students.AddAsync(student);
+                await _context.SaveChangesAsync();
+            }
+            
+            // if exists-  auth 
+            if (student.GroupId != model.GroupId)
+            {
+                return null;
+            }
+
+            var jwt = generateJwtToken(student);
+            var refreshToken = generateRefreshToken(ipAddress);
+
+            // save refresh token 
+            // TODO newly added user don`t have refresh tokens 
+            // student.RefreshTokens.Add(refreshToken);
+            _context.Update(student);
+            _context.SaveChanges();
+
+
+            return new AuthenticateResponse
+            {
+                Student = student, 
+                JwtToken = jwt, 
+                RefreshToken = refreshToken.Token
+            };
+        }
         public Student GetById(Guid studentId)
         {
             return _context.Students.Find(studentId);
