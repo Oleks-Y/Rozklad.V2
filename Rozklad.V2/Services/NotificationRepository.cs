@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Rozklad.V2.DataAccess;
 using Rozklad.V2.Entities;
+using Rozklad.V2.Google;
 using Rozklad.V2.Helpers;
 using Rozklad.V2.Scheduler;
 
@@ -13,23 +14,65 @@ namespace Rozklad.V2.Services
     public class NotificationRepository : INotificationRepository
     {
         private readonly ApplicationDbContext _context;
-
-
-        public NotificationRepository(ApplicationDbContext context)
+        private readonly IGoogleCalendarService _calendar;
+        public NotificationRepository(ApplicationDbContext context, IGoogleCalendarService calendar)
         {
             _context = context;
+            _calendar = calendar;
         }
 
-        public async Task EnableNotifications(Guid stuedntId)
+        // public async Task EnableNotifications(Guid stuedntId)
+        // {
+        //     //TODO call google calendar api 
+        //     // to set notifications 
+        //     await setNotifications(stuedntId, true);
+        // }
+        //
+        // public async Task DisableNotifications(Guid stuedntId)
+        // {
+        //     //TODO call google calendar api 
+        //     // to defable notifications 
+        //     await setNotifications(stuedntId, false);
+        // }
+
+        public async Task SetNotificationSettings(NotificationsSettings settings)
         {
-            await setNotifications(stuedntId, true);
-        }
+            Task apiCall = null;
+            // update calendar notifications
+            if (settings.NotificationType == "Google")
+            {
+                apiCall = _calendar.SetNotificationsInCalendar(settings);
+            }
 
-        public async Task DisableNotifications(Guid stuedntId)
+            Task dbCall = this.changeNottificationsSettingsInDb(settings);
+            await Task.WhenAll(apiCall ?? dbCall, dbCall);
+        }
+        /// <summary>
+        /// Method to update entifiy in database
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <returns></returns>
+        private async Task changeNottificationsSettingsInDb(NotificationsSettings settings)
         {
-            await setNotifications(stuedntId, false);
-        }
+            var student = await _context.Students.Include(s => s.NotificationsSettings)
+                .FirstOrDefaultAsync(s => s.Id == settings.StudentId);
 
+            // check if notifications entity exists 
+            if (student.NotificationsSettingsId == null || student.NotificationsSettings == null)
+            {
+                // if not exists - create
+                settings.Id = Guid.NewGuid();
+                await _context.NotificationsSettings.AddAsync(settings);
+                student.NotificationsSettingsId = settings.Id;
+                return;
+            }
+
+            // if exists - update 
+            student.NotificationsSettings.IsNotificationsOn = settings.IsNotificationsOn;
+            student.NotificationsSettings.TimeBeforeLesson = settings.TimeBeforeLesson;
+            student.NotificationsSettings.NotificationType = settings.NotificationType;
+        }
+        
         private async Task setNotifications(Guid studentId, bool isOn)
         {
             var student =

@@ -33,6 +33,7 @@ namespace Rozklad.V2.Services
 
         bool StudentExists(Guid studentId);
         Task UpdateNotification(NotificationsSettings notificationsSettings);
+        // TODO remove 
         Task<IEnumerable<Notification>> GetAllNotificationsByThisTime(FireTime fireTime);
 
         Task AddUserTelegramChatInfoAsync(TelegramData data);
