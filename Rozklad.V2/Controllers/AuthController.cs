@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AutoMapper;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Rozklad.V2.Entities;
 using Rozklad.V2.Models;
 using Rozklad.V2.Services;
+using Serilog;
 
 namespace Rozklad.V2.Controllers
 {
@@ -21,11 +24,14 @@ namespace Rozklad.V2.Controllers
         private readonly IUserSerice _userSerice;
         private readonly IMapper _mapper;
         private readonly IRozkladRepository _repository;
-        public AuthController(IUserSerice userSerice, IMapper mapper, IRozkladRepository repository)
+        private readonly ILogger<AuthController> _logger;
+        
+        public AuthController(IUserSerice userSerice, IMapper mapper, IRozkladRepository repository,  ILogger<AuthController> logger)
         {
             _userSerice = userSerice;
             _mapper = mapper;
             _repository = repository;
+             _logger = logger;
         }
 
         [AllowAnonymous]
@@ -38,7 +44,7 @@ namespace Rozklad.V2.Controllers
             var student = await _repository.GetUserByTelegramId((long)model.id);
             if (student == null)
             {
-                return NotFound();
+                return NotFound("Student with id = "+model.id+" is not found!");
             }
             return Ok(new GroupDto
             {
@@ -65,6 +71,39 @@ namespace Rozklad.V2.Controllers
                 TelegramUser = model.TelegramUser
             };
             var authResult = _userSerice.AuthenticateWithTelegram(authReuqest,ipAddress());
+            if (authResult == null)
+            {
+                return BadRequest("Group is not match user group!");
+            }
+            
+            setTokenCookie(authResult.RefreshToken);
+
+            return Ok(new AuthentificateDto
+            {
+                Id = authResult.Student.Id,
+                Group = authResult.Student.Group.Group_Name,
+                Username = authResult.Student.Username,
+                FirstName = authResult.Student.FirstName,
+                LastName = authResult.Student.LastName,
+                Token = authResult.JwtToken,
+                RefreshToken = authResult.RefreshToken
+            });
+        }
+
+        [AllowAnonymous]
+        [HttpPost("google")]
+        public async Task<IActionResult> Google([FromBody] GoogleAuthModel model)
+        {
+            Log.Information("userView = "+ model.tokenId);
+            var payload =
+               await GoogleJsonWebSignature.ValidateAsync(model.tokenId, new GoogleJsonWebSignature.ValidationSettings());
+            var authRequest = new AuthentificateRequestGoogle()
+            {
+                User = payload,
+                GroupId = model.GroupId,
+                AccessToken = model.AccessToken
+            };
+            var authResult = await _userSerice.AuthentificateWithGoogle(authRequest, ipAddress());
             if (authResult == null)
             {
                 return BadRequest("Group is not match user group!");

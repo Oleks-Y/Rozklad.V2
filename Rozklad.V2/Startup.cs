@@ -1,8 +1,10 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using Google.Apis.Auth.OAuth2;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Hangfire.PostgreSql;
@@ -11,7 +13,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,7 @@ using Quartz;
 using Quartz.Impl;
 using Quartz.Spi;
 using Rozklad.V2.DataAccess;
+using Rozklad.V2.Google;
 using Rozklad.V2.Helpers;
 using Rozklad.V2.Scheduler;
 using Rozklad.V2.Services;
@@ -46,13 +48,13 @@ namespace Rozklad.V2
             services.AddCors();
             services.AddControllers();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            
+
             // configure strongly typed settings objects
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
-            
+
             services.AddEntityFrameworkNpgsql();
-            services .AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseNpgsql(Configuration.GetConnectionString("Connection"));
             });
@@ -81,6 +83,7 @@ namespace Rozklad.V2
                                 // return unauthorized if user no longer exists
                                 context.Fail("Unauthorized");
                             }
+
                             return Task.CompletedTask;
                         }
                     };
@@ -98,51 +101,58 @@ namespace Rozklad.V2
             // services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IRozkladRepository, RozkladRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
-            services.AddScoped<IJobManager, JobManager>();
-            services.AddSingleton<TelegramValidationService>(s=>new TelegramValidationService(appSettings.BotToken));
-            // In production, the React files will be served from this directory
-            services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
+            // services.AddScoped<IJobManager, JobManager>();
+            services.AddSingleton<TelegramValidationService>(s => new TelegramValidationService(appSettings.BotToken));
+            // In production, the React files will be served from this director
             services.AddSwaggerGen(options =>
             {
                 options.DescribeAllEnumsAsStrings();
-                options.SwaggerDoc( "v1", new OpenApiInfo
+                options.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title =  "Rozklad",
-                    Version  = "v1",
+                    Title = "Rozklad",
+                    Version = "v1",
                     Description = "Simple API"
                 });
             });
-            
-           // HANGFIRE 
-           // Add Hangfire services.
-           services.AddHangfire(configuration => configuration
-               .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-               .UseFilter(new AutomaticRetryAttribute{ Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete})
-               .UseSimpleAssemblyNameTypeSerializer()
-               .UseRecommendedSerializerSettings()
-               //.UsePostgreSqlStorage(Configuration.GetConnectionString("HangfireConnection")
-               .UseMemoryStorage()
-               );
-           
-           // Add the processing server as IHostedService
-           services.AddHangfireServer();
-           
-           // Add framework services.
-           services.AddMvc().AddNewtonsoftJson(s=>s.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
-           services.AddScoped<ISchedulerService, SchedulerService>();
-           services.AddScoped<INotificationJob, NotificationJob>();
-           services.AddScoped<ITelegramNotificationService, TelegramNotificationService>();
+
+            // HANGFIRE 
+            // Add Hangfire services.
+            // services.AddHangfire(configuration => configuration
+            //     .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+            //     .UseFilter(new AutomaticRetryAttribute
+            //         {Attempts = 0, OnAttemptsExceeded = AttemptsExceededAction.Delete})
+            //     .UseSimpleAssemblyNameTypeSerializer()
+            //     .UseRecommendedSerializerSettings()
+            //     //.UsePostgreSqlStorage(Configuration.GetConnectionString("HangfireConnection")
+            //     .UseMemoryStorage()
+            // );
+
+            // Add the processing server as IHostedService
+            // services.AddHangfireServer();
+
+            // Add framework services.
+            services.AddMvc()
+                .AddNewtonsoftJson(s => s.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
+            // services.AddScoped<ISchedulerService, SchedulerService>();
+            // services.AddScoped<INotificationJob, NotificationJob>();
+            // services.AddScoped<ITelegramNotificationService, TelegramNotificationService>();
             // Telegram Bot start 
             services.AddScoped<StartCommand>();
             services.AddScoped<DisableNotificationsCommand>();
             services.AddScoped<EnableNotificationsCommand>();
             services.AddScoped<ICommandFactory, CommandFactory>();
+            // Google setup 
+            services.AddScoped<IGoogleCalendarService>(_ => new GoogleCalendarService(appSettings.GoogleApiKey));
+            services.AddScoped<GoogleTokenService>(_ => new GoogleTokenService(
+            new GoogleCredentials(
+                Configuration["GoogleClientId"], 
+                Configuration["GoogleClientSecret"])));
+            // services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
             Bot.GetBotClientAsync(appSettings).Wait();
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ISchedulerService schedulerService)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
@@ -157,12 +167,10 @@ namespace Rozklad.V2
                 app.UseHsts();
                 app.UseExceptionHandler("/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-               
             }
-            
+
             // it needs for create bot service and setWebhook
             app.UseStaticFiles();
-            app.UseSpaStaticFiles();
 
             app.UseRouting();
             app.UseCors(x => x
@@ -177,15 +185,11 @@ namespace Rozklad.V2
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
-                endpoints.MapHangfireDashboard();
+                // endpoints.MapHangfireDashboard();
             });
             app.UseSwagger()
-                .UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1" );
-                    
-                });
-            app.UseHangfireDashboard();
+                .UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"); });
+            // app.UseHangfireDashboard();
             // app.UseSpa(spa =>
             // {
             //     spa.Options.SourcePath = "ClientApp";
@@ -195,9 +199,8 @@ namespace Rozklad.V2
             //         spa.UseReactDevelopmentServer(npmScript: "start");
             //     }
             // });
-            
-           schedulerService.InitialalizeJobs();
-            
+
+            // schedulerService.InitialalizeJobs();
         }
     }
 }

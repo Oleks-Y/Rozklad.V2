@@ -18,4 +18,8 @@
       <ProjectReference Include="..\Rozklad.V2\Rozklad.V2.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Include="bin\Debug\netcoreapp3.1\credentials.json" />
+    </ItemGroup>
+
 </Project>

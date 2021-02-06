@@ -16,15 +16,13 @@ namespace Rozklad.V2.Controllers
     [Route("api/subject")]
     public class SubjectsController : ControllerBase
     {
-        private IStudentService _studentService;
         private IMapper _mapper;
         private readonly AppSettings _appSettings;
         private readonly IRozkladRepository _repository;
 
-        public SubjectsController(IStudentService studentService, IMapper mapper, IOptions<AppSettings> appSettings,
+        public SubjectsController(IMapper mapper, IOptions<AppSettings> appSettings,
             IRozkladRepository repository)
         {
-            _studentService = studentService;
             _mapper = mapper;
             _appSettings = appSettings.Value;
             _repository = repository;
@@ -34,13 +32,13 @@ namespace Rozklad.V2.Controllers
         {
             if (patchDocument == null)
             {
-                return BadRequest();
+                return BadRequest(new {message = "Document path is empty!"});
             }
 
             var subjectFromRepo = await _repository.GetSubjectAsync(subjectId);
             if (subjectFromRepo == null)
             {
-                return NotFound();
+                return NotFound(new {message = "Subject from repository is null!"});
             }
 
             var subjectToPatch = _mapper.Map<SubjectToUpdate>(subjectFromRepo);
@@ -58,5 +56,6 @@ namespace Rozklad.V2.Controllers
 
             return NoContent();
         }
+        
     }
 }

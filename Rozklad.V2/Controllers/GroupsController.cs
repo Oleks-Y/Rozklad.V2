@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Rozklad.V2.Entities;
 using Rozklad.V2.Models;
 using Rozklad.V2.Services;
@@ -18,10 +19,13 @@ namespace Rozklad.V2.Controllers
         //todo everywhere, where uses studentId with auth need to validate token with studentId 
 
         private readonly IRozkladRepository _rozkladRepository;
+        private readonly ILogger<GroupsController> _logger;
 
-        public GroupsController(IRozkladRepository rozkladRepository)
+
+        public GroupsController(IRozkladRepository rozkladRepository, ILogger<GroupsController> logger)
         {
             _rozkladRepository = rozkladRepository;
+            _logger = logger;
         }
 
         // todo allow student to change group
@@ -33,6 +37,9 @@ namespace Rozklad.V2.Controllers
             // select names and send as list
 
             var groups = await _rozkladRepository.GetAllGroupsAsync();
+             if(groups == null){
+                 _logger.LogError("Groups is null!");
+            }
 
             var groupNames = groups.Select(g => g.Group_Name.Replace(" ", ""));
 
@@ -43,12 +50,19 @@ namespace Rozklad.V2.Controllers
         public async Task<ActionResult<IEnumerable<SubjectDto>>> GetTimeTableGroupAsync(string groupName)
         {
             var group = _rozkladRepository.GetGroupByName(groupName);
+            if(groupName == null){
+                _logger.LogError("groupName is null!");
+            }
+
             if (group == null)
             {
-                return NotFound();
+                return NotFound("Group for  "+groupName+" is not found!");
             }
 
             var lessons = await _rozkladRepository.GetLessonsForGroupAsync(group.Id);
+            if(lessons == null){
+                _logger.LogError("Lessons for group (Id) "+group.Id+" is absent!");
+            }
             
             return Ok(lessons);
         }

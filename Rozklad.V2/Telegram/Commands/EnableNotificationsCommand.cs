@@ -28,7 +28,7 @@ namespace Rozklad.V2.Telegram.Commands
                 await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Тут текст з проханням зарєєструватись на сайті");
             }
 
-            await _notificationRepositor.EnableNotifications(student.Id);
+            // await _notificationRepositor.EnableNotifications(student.Id);
             await Bot.BotClient.SendTextMessageAsync(message.Chat.Id, "Сповіщення ввімкнено!");
         }
 

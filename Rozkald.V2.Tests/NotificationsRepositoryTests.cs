@@ -132,7 +132,7 @@ namespace Rozkald.V2.Tests
             IEnumerable<FireTime> result;
             using (var context = new ApplicationDbContext(options))
             {
-                var repository = new NotificationRepository(context);
+                // var repository = new NotificationRepository(context);
                 // result = await repository.EnableNotifications(studentId1);
             }
             // Assert 

@@ -1,0 +1,18 @@
+1. Add entity eventForStudent : 
+    class eventForStudent{
+        id : uuid
+        studentId : Guid(uuid),
+        eventId : string,
+        calendarId : string
+    }
+
+2. In NotificationRepository : 
+    1. Notification On if off 
+    2. if notifications on and timeBefforeLessonChanged  -> updateNotifications : get all notifications for student from db (from table eventForStudent) and pass to method updateCalendarNotificaitons 
+    3. 
+3. Debug google requests  
+
+Later 
+____________________________
+4. check updates from calendar 
+5. something else 

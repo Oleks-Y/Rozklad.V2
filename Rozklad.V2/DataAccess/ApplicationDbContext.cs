@@ -24,13 +24,14 @@ namespace Rozklad.V2.DataAccess
 
         public DbSet<Group> Groups { get; set; }
 
-        public DbSet<DisabledSubject> DisabledSubjects { get; set; } 
-        
+        public DbSet<DisabledSubject> DisabledSubjects { get; set; }
+
         public DbSet<NotificationsSettings> NotificationsSettings { get; set; }
 
         public DbSet<TelegramData> TelegramData { get; set; }
 
         public DbSet<MutedSubject> MutedSubjects { get; set; }
         
+        public DbSet<GoogleData> GoogleData { get; set; }
     }
 }

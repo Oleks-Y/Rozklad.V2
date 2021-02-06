@@ -29,7 +29,7 @@ namespace Rozklad.V2.Controllers
         {
             if (!_repository.StudentExists(studentId))
             {
-                return NotFound();
+                return NotFound("Student ("+studentId+") does not exists!");
             }
 
             // get lessons 
@@ -37,12 +37,31 @@ namespace Rozklad.V2.Controllers
             var student = await _repository.GetStudentAsync(studentId);
             if (student == null)
             {
-                return NotFound();
+                return NotFound(new {message ="Student is absent!"});
             }
 
             var lessons = await _repository.GetLessonsForStudent(studentId);
+            if(lessons == null){
+                 return NotFound(new {message ="Lessons for student "+studentId+" is absent!"});
+            }
 
             return Ok(lessons);
         }
+        
+        // todo add method to get timetable like that : 
+        /*{
+         *[
+         *week1
+         *  [
+         *      [day1],
+         *      [day2]
+         * ],
+         * week2
+         *  []
+         * ]
+         *
+         * }
+         *
+         */
     }
 }

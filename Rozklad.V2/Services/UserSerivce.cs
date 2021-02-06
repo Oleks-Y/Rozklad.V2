@@ -4,10 +4,13 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
+using Google.Apis.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Rozklad.V2.DataAccess;
 using Rozklad.V2.Entities;
+using Rozklad.V2.Google;
 using Rozklad.V2.Helpers;
 using Telegram.Bot.Types;
 
@@ -17,7 +20,7 @@ namespace Rozklad.V2.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly AppSettings _appSettings;
-
+        private readonly IGoogleCalendarService _calendarService;
         public UserSerivce(ApplicationDbContext context, AppSettings appSettings)
         {
             _context = context;
@@ -57,7 +60,7 @@ namespace Rozklad.V2.Services
             }
 
             // if exists-  auth 
-            if (student.Group.Id != model.GroupId)
+            if (student.GroupId != model.GroupId)
             {
                 return null;
             }
@@ -74,6 +77,54 @@ namespace Rozklad.V2.Services
             return new AuthenticateResponse {Student = student, JwtToken = jwt, RefreshToken = refreshToken.Token};
         }
 
+        public async Task<AuthenticateResponse> AuthentificateWithGoogle(AuthentificateRequestGoogle model, string ipAddress)
+        {
+            //Same as telegram logic
+            var student = _context.Students
+                .Include("Group")
+                .Include("RefreshTokens")
+                // HERE USERNAME IS EMAIL 
+                .SingleOrDefault(s => s.Username == model.User.Email);
+            if (student == null)
+            {
+                // if user not exists in database - create new one 
+                
+                student = new Student
+                {
+                    Id = Guid.NewGuid(),
+                    Username = model.User.Email,
+                    FirstName = model.User.GivenName,
+                    LastName = model.User.FamilyName,
+                    GroupId = model.GroupId,
+                };
+                // add googleData of user to database 
+                await addGoogleData(student, model);
+                await _context.Students.AddAsync(student);
+                await _context.SaveChangesAsync();
+            }
+            
+            // if exists-  auth 
+            if (student.GroupId != model.GroupId)
+            {
+                return null;
+            }
+
+            var jwt = generateJwtToken(student);
+            var refreshToken = generateRefreshToken(ipAddress);
+
+            // save refresh token 
+            // TODO newly added user don`t have refresh tokens 
+            // student.RefreshTokens.Add(refreshToken);
+            _context.Update(student);
+            await _context.SaveChangesAsync();
+    
+            return new AuthenticateResponse
+            {
+                Student = student, 
+                JwtToken = jwt, 
+                RefreshToken = refreshToken.Token
+            };
+        }
         public Student GetById(Guid studentId)
         {
             return _context.Students.Find(studentId);
@@ -130,6 +181,20 @@ namespace Rozklad.V2.Services
             _context.SaveChanges();
 
             return true;
+        }
+
+        private async Task addGoogleData(Student student,AuthentificateRequestGoogle model)
+        {
+            var googleData = new GoogleData()
+            {
+                Id = Guid.NewGuid(),
+                Email = model.User.Email,
+                StudentId = student.Id,
+                CalendarId = await _calendarService.GetCalendarIdForUser(model.AccessToken),
+                RefreshToken = model.RefreshToken
+            };
+            await _context.GoogleData.AddAsync(googleData);
+            await _context.SaveChangesAsync();
         }
         // helper methods
 

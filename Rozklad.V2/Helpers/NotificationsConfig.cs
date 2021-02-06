@@ -18,5 +18,8 @@ namespace Rozklad.V2.Helpers
         };
 
         public static bool IsFirstWeekEven { get; set; } = true;
+
+        public static DateTime FirstDayOfSemester { get; set; } = DateTime.Parse("2021-01-01");
+    
     }
 }
